@@ -3,11 +3,16 @@ package com.ashraf.entity;
 import com.ashraf.enums.Role;
 import com.ashraf.enums.Status;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+@Setter
+@Getter
 
 @Entity
 @Table(name = "users")
