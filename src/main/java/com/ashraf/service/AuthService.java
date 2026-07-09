@@ -58,7 +58,7 @@ public class AuthService {
         user.setRole(req.getRole());
         // Customer is activated immediately, but for restaurant and rider need approval
         user.setStatus(req.getRole() == Role.CUSTOMER ? Status.ACTIVE : Status.PENDING_VERIFICATION);
-
+        user = userRepository.save(user);
         switch (req.getRole()) {
             case CUSTOMER -> {
                 AddressNormalized address = buildAddress(req);
