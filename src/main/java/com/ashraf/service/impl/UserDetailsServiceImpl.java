@@ -3,10 +3,10 @@ package com.ashraf.service.impl;
 import com.ashraf.entity.User;
 import com.ashraf.enums.Status;
 import com.ashraf.repository.UserRepository;
-import com.ashraf.service.UserDetailsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
-    @Value("${user.not.found")
+    @Value("${user.not.found}")
     private String userNotFound;
 
     public UserDetailsServiceImpl(UserRepository userRepository) {

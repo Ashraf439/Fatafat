@@ -2,9 +2,13 @@ package com.ashraf.entity;
 
 import com.ashraf.enums.ApprovalStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "riders")
+@Getter
+@Setter
 public class Rider {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

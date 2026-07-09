@@ -1,11 +1,15 @@
 package com.ashraf.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "address_normalized")
+@Getter
+@Setter
 public class AddressNormalized {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

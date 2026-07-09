@@ -2,12 +2,16 @@ package com.ashraf.entity;
 
 import com.ashraf.enums.DeliveryStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "delivery")
+@Getter
+@Setter
 public class Delivery {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
