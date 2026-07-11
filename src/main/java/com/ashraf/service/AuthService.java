@@ -4,7 +4,6 @@ import com.ashraf.dto.LoginRequest;
 import com.ashraf.dto.LoginResponse;
 import com.ashraf.dto.RegisterRequest;
 import com.ashraf.entity.*;
-import com.ashraf.enums.ApprovalStatus;
 import com.ashraf.enums.Role;
 import com.ashraf.enums.Status;
 import com.ashraf.exception.AccountNotActiveException;
@@ -79,7 +78,6 @@ public class AuthService {
                 restaurant.setName(req.getName());
                 restaurant.setAddress(address);
                 restaurant.setFssaiLicense(req.getFssaiLicense());
-                restaurant.setApprovalStatus(ApprovalStatus.PENDING);
                 restaurant.setIsOpen(Boolean.FALSE);
                 restaurantRepository.save(restaurant);
             }
@@ -92,7 +90,6 @@ public class AuthService {
                 rider.setName(req.getName());
                 rider.setVehicleType(req.getVehicleType());
                 rider.setLicenseNumber(req.getLicenseNumber());
-                rider.setApprovalStatus(ApprovalStatus.PENDING);
                 rider.setIsAvailable(Boolean.FALSE);
                 riderRepository.save(rider);
             }

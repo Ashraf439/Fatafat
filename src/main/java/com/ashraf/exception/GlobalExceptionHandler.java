@@ -30,6 +30,15 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(UserDoesNotExistException.class)
+    public ResponseEntity<Map<String, String>> handleUserNotFound(UserDoesNotExistException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(AccountAlreadyActivatedException.class)
+    public ResponseEntity<Map<String, String>> handleAccount(AccountAlreadyActivatedException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
     private ResponseEntity<Map<String, String>> buildResponse(String message, HttpStatus status) {
         Map<String, String> body = new HashMap<>();
         body.put("error", message);

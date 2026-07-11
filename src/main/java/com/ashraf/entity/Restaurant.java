@@ -1,6 +1,5 @@
 package com.ashraf.entity;
 
-import com.ashraf.enums.ApprovalStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,9 +30,6 @@ public class Restaurant {
     private AddressNormalized address;
 
     private String fssaiLicense;
-
-    @Enumerated(EnumType.STRING)
-    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
     private Boolean isOpen = true;
 

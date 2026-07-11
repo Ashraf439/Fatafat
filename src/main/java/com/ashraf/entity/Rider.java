@@ -1,6 +1,5 @@
 package com.ashraf.entity;
 
-import com.ashraf.enums.ApprovalStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,9 +20,6 @@ public class Rider {
     private String name;
     private String vehicleType;
     private String licenseNumber;
-
-    @Enumerated(EnumType.STRING)
-    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
     private Boolean isAvailable;
 }
