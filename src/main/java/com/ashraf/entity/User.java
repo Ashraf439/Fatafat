@@ -1,6 +1,5 @@
 package com.ashraf.entity;
 
-import com.ashraf.enums.Role;
 import com.ashraf.enums.Status;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -30,9 +29,6 @@ public class User {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
-
-    @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
     @CreationTimestamp
@@ -50,4 +46,7 @@ public class User {
 
     @OneToMany(mappedBy = "ownerUser", fetch = FetchType.LAZY)
     private List<Restaurant> restaurants;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<UserRoles> userRoles;
 }

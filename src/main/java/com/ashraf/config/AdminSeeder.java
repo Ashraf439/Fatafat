@@ -1,7 +1,6 @@
 package com.ashraf.config;
 
 import com.ashraf.entity.User;
-import com.ashraf.enums.Role;
 import com.ashraf.enums.Status;
 import com.ashraf.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;

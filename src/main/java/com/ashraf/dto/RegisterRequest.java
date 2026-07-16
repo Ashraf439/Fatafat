@@ -1,6 +1,5 @@
 package com.ashraf.dto;
 
-import com.ashraf.enums.Role;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;

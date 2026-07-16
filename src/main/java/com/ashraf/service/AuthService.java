@@ -4,7 +4,6 @@ import com.ashraf.dto.LoginRequest;
 import com.ashraf.dto.LoginResponse;
 import com.ashraf.dto.RegisterRequest;
 import com.ashraf.entity.*;
-import com.ashraf.enums.Role;
 import com.ashraf.enums.Status;
 import com.ashraf.exception.AccountNotActiveException;
 import com.ashraf.exception.InvalidCredentialsException;
