@@ -4,7 +4,11 @@ import com.ashraf.entity.Permissions;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
+@Repository
 public interface PermissionRepository extends JpaRepository<Permissions, Long> {
 
     @Query("""
@@ -17,4 +21,6 @@ public interface PermissionRepository extends JpaRepository<Permissions, Long> {
         AND p.name = :permissionName
         """)
     boolean userHasPermission(@Param("userId") Long userId, @Param("permissionName") String permissionName);
+    boolean existsByName(String permissionName);
+    Optional<Permissions> findByName(String permissionName);
 }
