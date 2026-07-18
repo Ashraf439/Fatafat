@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RegisterRequest {
+public class CustomerRegisterRequest {
     @NotBlank
     private String name;
 
@@ -18,19 +18,5 @@ public class RegisterRequest {
 
     @NotBlank @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
-
-    @NotNull
-    private Role role;
-
-    private String fssaiLicense;
-    private String vehicleType;
-    private String licenseNumber;
-
-    private String city;
-    private String state;
-    private String pincode;
-    private String street;
-    private Double latitude;
-    private Double longitude;
 
 }
