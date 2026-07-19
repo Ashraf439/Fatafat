@@ -18,8 +18,22 @@ public class Rider {
     private User user;
 
     private String name;
-    private String vehicleType;
-    private String licenseNumber;
 
     private Boolean isAvailable;
+
+    private String vehicleType;
+
+    private String vehicleNumber;
+
+    private String vehicleModel;
+
+    private String vehicleColor;
+
+    private String drivingLicenseNumber;
+
+    private String nationalId;
+
+    private String operatingCity;
+
+    private String referralCode;
 }

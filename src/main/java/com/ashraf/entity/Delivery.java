@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,4 +31,9 @@ public class Delivery {
 
     @CreationTimestamp
     private LocalDateTime deliveryDatetime;
+
+    private LocalDateTime pickedUpAt;
+    private LocalDateTime deliveredAt;
+    private String deliveryOtp; // verify handoff to customer
+    private BigDecimal distanceKm;
 }

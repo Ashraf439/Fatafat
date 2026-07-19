@@ -1,9 +1,13 @@
 package com.ashraf.entity;
 
 import com.ashraf.enums.OrderStatus;
+import com.ashraf.enums.PaymentMethod;
+import com.ashraf.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,4 +41,27 @@ public class Order {
 
     @OneToOne(mappedBy = "order")
     private Delivery delivery;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_address_id", nullable = false)
+    private AddressNormalized deliveryAddress;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
+    private BigDecimal subtotal;
+    private BigDecimal deliveryFee;
+    private BigDecimal taxAmount;
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    private String specialInstructions;
+    private String cancelReason;
+    private LocalDateTime estimatedDeliveryTime;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

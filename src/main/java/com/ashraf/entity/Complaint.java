@@ -2,9 +2,16 @@ package com.ashraf.entity;
 
 import com.ashraf.enums.ComplaintStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "complaints")
+@Getter
+@Setter
 public class Complaint {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,4 +29,9 @@ public class Complaint {
 
     @Enumerated(EnumType.STRING)
     private ComplaintStatus status = ComplaintStatus.OPEN;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    private LocalDateTime resolvedAt;
+    private String resolutionNotes;
 }

@@ -31,6 +31,8 @@ public class Restaurant {
 
     private String fssaiLicense;
 
+    private String gstin;
+
     private Boolean isOpen = true;
 
     @CreationTimestamp
@@ -41,4 +43,7 @@ public class Restaurant {
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Menu> menuItems;
+
+    @OneToOne(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    private BankDetails bankDetails;
 }

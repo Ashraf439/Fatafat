@@ -1,9 +1,16 @@
 package com.ashraf.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "rating")
+@Getter
+@Setter
 public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,4 +26,7 @@ public class Rating {
 
     private Integer ratingValue;
     private String description;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 }
