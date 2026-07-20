@@ -21,28 +21,24 @@ public class JWTUtil {
         return  Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public  String generateToken(Long userId, String email, String role) {
+    public  String generateToken(Long userId, String email) {
         return Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
-                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
 
+    public Long extractUserId(String token) {
+        return extractAllClaims(token).get("userId", Long.class);
+    }
+
     public String extractEmail(String token) {
         return extractClaim(token, Claims:: getSubject);
     }
 
-    public String extractUserId(String token) {
-        return extractAllClaims(token).get("userId", String.class);
-    }
-
-    public  String extractRole(String token) {
-        return extractAllClaims(token).get("role", String.class);
-    }
 
     public boolean isTokenValid(String token) {
         try{
