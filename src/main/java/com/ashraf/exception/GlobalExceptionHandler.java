@@ -2,6 +2,9 @@ package com.ashraf.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -32,13 +35,60 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserDoesNotExistException.class)
     public ResponseEntity<Map<String, String>> handleUserNotFound(UserDoesNotExistException ex) {
-        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
+        return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(AccountAlreadyActivatedException.class)
     public ResponseEntity<Map<String, String>> handleAccount(AccountAlreadyActivatedException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidRefreshToken(InvalidRefreshTokenException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(PermissionNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handlePermissionNotFound(PermissionNotFoundException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleRoleNotFound(RoleNotFoundException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(SuspendedAccountException.class)
+    public ResponseEntity<Map<String, String>> handleSuspendedAccount(SuspendedAccountException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    // Handles @Valid/@NotBlank/@Pattern etc. failures on @RequestBody DTOs
+    // (this is the one that was missing — caused the raw stack trace on /login)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> body = new HashMap<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            body.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    // Handles malformed/unparseable JSON bodies (e.g. missing quotes, trailing comma,
+    // wrong type for a field) — without this, a broken JSON body also falls through
+    // to Spring's default error page with a stack trace, same problem as above.
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        return buildResponse("Malformed request body", HttpStatus.BAD_REQUEST);
+    }
+
+    // Catch-all safety net: any exception not explicitly handled above still gets
+    // a clean JSON response instead of leaking a stack trace to the client.
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGeneric(Exception ex) {
+        return buildResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private ResponseEntity<Map<String, String>> buildResponse(String message, HttpStatus status) {
         Map<String, String> body = new HashMap<>();
         body.put("error", message);

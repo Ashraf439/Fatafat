@@ -40,4 +40,9 @@ public class AddressNormalized {
     private AddressType addressType;
 
     private Boolean isDefault = false;
+
+    // In AddressNormalized:
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 }

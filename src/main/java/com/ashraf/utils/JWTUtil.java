@@ -18,10 +18,10 @@ public class JWTUtil {
     private long expirationMs;
 
     private SecretKey getSigningKey() {
-        return  Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public  String generateToken(Long userId, String email) {
+    public String generateToken(Long userId, String email) {
         return Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
@@ -36,24 +36,25 @@ public class JWTUtil {
     }
 
     public String extractEmail(String token) {
-        return extractClaim(token, Claims:: getSubject);
+        return extractClaim(token, Claims::getSubject);
     }
 
-
+    /**
+     * Validates signature + expiry in a single parse. jjwt's parseSignedClaims
+     * already throws ExpiredJwtException internally if the token is expired,
+     * so a separate isTokenExpired() re-check/re-parse was redundant and
+     * unreachable in the expired case — removed.
+     */
     public boolean isTokenValid(String token) {
-        try{
+        try {
             extractAllClaims(token);
-            return !isTokenExpired(token);
-        }catch (JwtException | IllegalArgumentException e) {
-            return  false;
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
         }
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
-    }
-
-    private <T> T extractClaim(String token,Function<Claims, T> resolver) {
+    private <T> T extractClaim(String token, Function<Claims, T> resolver) {
         return resolver.apply(extractAllClaims(token));
     }
 
@@ -64,5 +65,4 @@ public class JWTUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
 }

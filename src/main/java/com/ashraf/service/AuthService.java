@@ -4,11 +4,15 @@ import com.ashraf.dto.*;
 import com.ashraf.entity.*;
 import com.ashraf.enums.Status;
 import com.ashraf.exception.RoleNotFoundException;
+import com.ashraf.exception.SuspendedAccountException;
 import com.ashraf.exception.UserAlreadyExistsException;
 import com.ashraf.repository.*;
+import com.ashraf.security.CustomUserDetails;
 import com.ashraf.utils.JWTUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +29,13 @@ public class AuthService {
     private final JWTUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(UserRepository userRepository, CustomerRepository customerRepository,
                        RiderRepository riderRepository, AddressRepository addressRepository,
                        RestaurantRepository restaurantRepository, RolesRepository rolesRepository,
                        UserRolesRepository userRolesRepository, JWTUtil jwtUtil,
-                       AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
+                       AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
         this.riderRepository = riderRepository;
@@ -41,6 +46,24 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
+        this.refreshTokenService = refreshTokenService;
+    }
+
+    public LoginResult login(LoginRequest req) {
+        String email = req.getEmail();
+        String rawPassword = req.getPassword();
+        UsernamePasswordAuthenticationToken authRequest =
+                new UsernamePasswordAuthenticationToken(email, rawPassword);
+        Authentication authResult = authenticationManager.authenticate(authRequest);
+
+        CustomUserDetails principal = (CustomUserDetails) authResult.getPrincipal();
+        User user = principal.getUser();
+        if (user.getStatus() == Status.SUSPENDED) {
+            throw new SuspendedAccountException("This account has been suspended");
+        }
+        String accessToken = jwtUtil.generateToken(user.getId(), user.getEmail());
+        String rawRefreshToken = refreshTokenService.issueRefreshToken(user);
+        return new LoginResult(accessToken, rawRefreshToken, user);
     }
 
     @Transactional
