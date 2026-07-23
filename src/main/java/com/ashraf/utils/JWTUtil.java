@@ -21,7 +21,7 @@ public class JWTUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(Long userId, String email) {
+    public String generateToken(Long userId, String email, java.util.List<String> roles, String status) {
         return Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)

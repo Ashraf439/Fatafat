@@ -2,13 +2,13 @@ package com.ashraf.security;
 
 import com.ashraf.entity.Permissions;
 import com.ashraf.entity.User;
+import com.ashraf.enums.Status;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -34,20 +34,14 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public List<GrantedAuthority> getAuthorities() {
-        Stream<String> roleAuthorities = user.getUserRoles().stream()
-                .map(ur -> "ROLE_" + ur.getRole().getName());
-
-        Stream<String> permissionAuthorities = permissions.stream()
-                .map(Permissions::getName);
-
-        return Stream.concat(roleAuthorities, permissionAuthorities)
-                .map(SimpleGrantedAuthority::new)
+        return user.getUserRoles().stream()
+                .map(ur -> new SimpleGrantedAuthority("ROLE_" + ur.getRole().getName()))
                 .collect(Collectors.toList());
     }
 
     @Override
     public boolean isEnabled() {
-        return true; // suspended-check happens later in AuthService, not here
+        return user.getStatus() != Status.SUSPENDED;
     }
 
     @Override

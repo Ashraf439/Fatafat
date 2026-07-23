@@ -16,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AuthService {
 
@@ -61,7 +63,10 @@ public class AuthService {
         if (user.getStatus() == Status.SUSPENDED) {
             throw new SuspendedAccountException("This account has been suspended");
         }
-        String accessToken = jwtUtil.generateToken(user.getId(), user.getEmail());
+        List<String> roleNames = user.getUserRoles().stream()
+                .map(ur -> ur.getRole().getName())
+                .toList();
+        String accessToken = jwtUtil.generateToken(user.getId(), user.getEmail(), roleNames, user.getStatus().name());
         String rawRefreshToken = refreshTokenService.issueRefreshToken(user);
         return new LoginResult(accessToken, rawRefreshToken, user);
     }
@@ -77,11 +82,14 @@ public class AuthService {
         user.setStatus(Status.ACTIVE);
         user = userRepository.save(user);
 
-        AddressNormalized address = addressRepository.save(buildAddress(req.getAddress()));
+        AddressNormalized address = buildAddress(req.getAddress());
 
         Customer customer = new Customer();
         customer.setUser(user);
         customer.setName(req.getName());
+
+        address.setCustomer(customer);  // add this — links the reverse collection
+        address = addressRepository.save(address);
         customer.setAddress(address);
         customerRepository.save(customer);
 

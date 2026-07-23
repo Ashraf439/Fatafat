@@ -3,9 +3,11 @@ package com.ashraf.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,15 +65,25 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, String>> handleAuthFailure(AuthenticationException ex) {
+        return buildResponse("Invalid email or password", HttpStatus.UNAUTHORIZED);
+    }
+
     // Handles @Valid/@NotBlank/@Pattern etc. failures on @RequestBody DTOs
     // (this is the one that was missing — caused the raw stack trace on /login)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, String> body = new HashMap<>();
+        StringBuilder errors = new StringBuilder();
+
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            body.put(fieldError.getField(), fieldError.getDefaultMessage());
+            if(!errors.isEmpty()) {
+                errors.append(" ");
+            }
+            errors.append(fieldError.getField()).append(": ").append(fieldError.getDefaultMessage());
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+
+        return buildResponse(errors.toString(), HttpStatus.BAD_REQUEST);
     }
 
     // Handles malformed/unparseable JSON bodies (e.g. missing quotes, trailing comma,

@@ -4,21 +4,21 @@ import com.ashraf.dto.*;
 import com.ashraf.entity.User;
 import com.ashraf.service.AuthService;
 import com.ashraf.service.LoginResult;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseCookie;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    @Value(("${jwt.expiration-ms}"))
+    private long jwtExpirationMs;
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
@@ -44,26 +44,15 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req, HttpServletResponse servletResponse) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
         LoginResult result = authService.login(req);
-
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", result.rawRefreshToken())
-                .httpOnly(true)
-                .secure(true)
-                .path("/api/auth")
-                .maxAge(Duration.ofDays(30))
-                .sameSite("Strict")
-                .build();
-
-        servletResponse.addHeader("Set-Cookie", cookie.toString());
-
         User user = result.user();
 
         List<String> roles = user.getUserRoles().stream()
                 .map(userRole -> userRole.getRole().getName())
                 .toList();
 
-        LoginResponse.UserSummary userSummary = new LoginResponse.UserSummary(
+        LoginResponse.Account account = new LoginResponse.Account(
                 user.getId(),
                 user.getEmail(),
                 user.getPhoneNumber(),
@@ -71,7 +60,19 @@ public class AuthController {
                 roles,
                 user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
         );
-        LoginResponse body = new LoginResponse(result.accessToken(),userSummary);
-        return ResponseEntity.ok(body);
+
+        // expiresAt as epoch seconds when the access token expires — adjust if
+        // your frontend expects "seconds until expiry" (86400) instead of a
+        // timestamp; your example's 86400 value reads like the former (duration),
+        // not an absolute epoch time. Confirm which one your owner actually wants.
+        long expiresAt =  (jwtExpirationMs / 1000);
+
+        LoginResponse.Tokens tokens = new LoginResponse.Tokens(
+                result.accessToken(),
+                result.rawRefreshToken(),
+                expiresAt
+        );
+
+        return ResponseEntity.ok(new LoginResponse(account, tokens));
     }
 }

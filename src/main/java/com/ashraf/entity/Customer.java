@@ -44,6 +44,6 @@ public class Customer {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     private List<AddressNormalized> addresses;
 }

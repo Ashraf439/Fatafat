@@ -49,19 +49,19 @@ public class AdminSeeder implements CommandLineRunner {
     }
 
     private void seedSuperAdmin() {
-        if(!userRepository.existsByUserRoles_Role_Name("SUPER_ADMIN")) {
-            User user = new User();
-            user.setEmail(email);
-            user.setPasswordHash(encoder.encode(password));
-            user.setStatus(Status.ACTIVE);
-            userRepository.save(user);
-            Roles roles = rolesRepository.findByName("SUPER_ADMIN").orElseThrow();
-            UserRoles userRoles = new UserRoles();
-            userRoles.setUser(user);
-            userRoles.setRole(roles);
-            userRolesRepository.save(userRoles);
+        if (userRepository.findByEmail(email).isPresent()) {
+            return; // seed email already exists — don't attempt to insert again
         }
-
+        User user = new User();
+        user.setEmail(email);
+        user.setPasswordHash(encoder.encode(password));
+        user.setStatus(Status.ACTIVE);
+        userRepository.save(user);
+        Roles roles = rolesRepository.findByName("SUPER_ADMIN").orElseThrow();
+        UserRoles userRoles = new UserRoles();
+        userRoles.setUser(user);
+        userRoles.setRole(roles);
+        userRolesRepository.save(userRoles);
     }
 
     private void seedRolePermissions() throws RoleNotFoundException {
