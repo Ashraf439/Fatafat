@@ -106,4 +106,9 @@ public class GlobalExceptionHandler {
         body.put("error", message);
         return ResponseEntity.status(status).body(body);
     }
+
+    @ExceptionHandler(RateLimitExceedException.class)
+    public ResponseEntity<Map<String, String>> handleRateLimitExceeded(RateLimitExceedException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.TOO_MANY_REQUESTS);
+    }
 }

@@ -1,5 +1,6 @@
 package com.ashraf.controller;
 
+import com.ashraf.annotation.RateLimit;
 import com.ashraf.dto.*;
 import com.ashraf.entity.User;
 import com.ashraf.service.AuthService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,24 +28,28 @@ public class AuthController {
     }
 
     @PostMapping("register/customer")
-    public ResponseEntity<String> registerCustomer(@Valid @RequestBody CustomerRegisterRequest req) {
+    @RateLimit(limit = 5, timeWindow = 60)
+    public ResponseEntity<Map<String, String>> registerCustomer(@Valid @RequestBody CustomerRegisterRequest req) {
         authService.registerCustomer(req);
-        return ResponseEntity.ok("Customer registered successfully");
+        return ResponseEntity.ok(Map.of("message", "Customer registered successfully"));
     }
 
     @PostMapping("register/restaurant")
-    public ResponseEntity<String> registerRestaurant(@Valid @RequestBody RestaurantRegisterRequest req) {
+    @RateLimit(limit = 5, timeWindow = 60)
+    public ResponseEntity<Map<String, String>> registerRestaurant(@Valid @RequestBody RestaurantRegisterRequest req) {
         authService.registerRestaurant(req);
-        return ResponseEntity.ok("Restaurant registered. Pending approval.");
+        return ResponseEntity.ok(Map.of("message","Restaurant registered. Pending approval."));
     }
 
     @PostMapping("register/rider")
-    public ResponseEntity<String> registerRider(@Valid @RequestBody RiderRegisterRequest req) {
+    @RateLimit(limit = 5, timeWindow = 60)
+    public ResponseEntity<Map<String, String>> registerRider(@Valid @RequestBody RiderRegisterRequest req) {
         authService.registerRider(req);
-        return ResponseEntity.ok("Rider registered. Pending background check.");
+        return ResponseEntity.ok(Map.of("message","Rider registered. Pending background check."));
     }
 
     @PostMapping("login")
+    @RateLimit(limit = 5, timeWindow = 60)
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
         LoginResult result = authService.login(req);
         User user = result.user();
