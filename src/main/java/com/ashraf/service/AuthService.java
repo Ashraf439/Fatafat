@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -32,12 +33,14 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
+    private final TokenRepository tokenRepository;
+    private final EmailService emailService;
 
     public AuthService(UserRepository userRepository, CustomerRepository customerRepository,
                        RiderRepository riderRepository, AddressRepository addressRepository,
                        RestaurantRepository restaurantRepository, RolesRepository rolesRepository,
                        UserRolesRepository userRolesRepository, JWTUtil jwtUtil,
-                       AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService) {
+                       AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService, TokenRepository tokenRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
         this.riderRepository = riderRepository;
@@ -49,6 +52,8 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
+        this.tokenRepository = tokenRepository;
+        this.emailService = emailService;
     }
 
     public LoginResult login(LoginRequest req) {
@@ -60,8 +65,13 @@ public class AuthService {
 
         CustomUserDetails principal = (CustomUserDetails) authResult.getPrincipal();
         User user = principal.getUser();
+        //Block authentication
         if (user.getStatus() == Status.SUSPENDED) {
             throw new SuspendedAccountException("This account has been suspended");
+        }
+
+        if (user.getStatus() == Status.PENDING_VERIFICATION) {
+            throw new RuntimeException("Please verify your email address before logging in.");
         }
         List<String> roleNames = user.getUserRoles().stream()
                 .map(ur -> ur.getRole().getName())
@@ -79,7 +89,7 @@ public class AuthService {
         User user = new User();
         user.setEmail(req.getEmail());
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-        user.setStatus(Status.ACTIVE);
+        user.setStatus(Status.PENDING_VERIFICATION);
         user = userRepository.save(user);
 
         AddressNormalized address = buildAddress(req.getAddress());
@@ -91,7 +101,14 @@ public class AuthService {
         address.setCustomer(customer);  // add this — links the reverse collection
         address = addressRepository.save(address);
         customer.setAddress(address);
-        customerRepository.save(customer);
+        Customer savedCustomer = customerRepository.save(customer);
+
+        String tokenStr = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken(tokenStr, savedCustomer.getUser());
+        tokenRepository.save(verificationToken);
+
+        // 3. Dispatch the verification link
+        emailService.sendVerificationEmail(savedCustomer.getUser().getEmail(), tokenStr);
 
         linkRole(user, "CUSTOMER");
     }
@@ -116,8 +133,15 @@ public class AuthService {
         restaurant.setGstin(req.getGstin());
         restaurant.setAddress(address);
         restaurant.setBankDetails(buildBankDetails(req.getBankDetails(), restaurant));
-        restaurantRepository.save(restaurant);
+        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
+
+        String tokenStr = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken(tokenStr, savedRestaurant.getOwnerUser());
+        tokenRepository.save(verificationToken);
+
+        // 3. Dispatch the verification link
+        emailService.sendVerificationEmail(savedRestaurant.getOwnerUser().getEmail(), tokenStr);
         linkRole(user, "RESTAURANT");
     }
 
@@ -143,7 +167,14 @@ public class AuthService {
         rider.setVehicleNumber(req.getVehicleNumber());
         rider.setVehicleModel(req.getVehicleModel());
         rider.setVehicleColor(req.getVehicleColor());
-        riderRepository.save(rider);
+        Rider savedRider = riderRepository.save(rider);
+
+        String tokenStr = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken(tokenStr, savedRider.getUser());
+        tokenRepository.save(verificationToken);
+
+        // 3. Dispatch the verification link
+        emailService.sendVerificationEmail(savedRider.getUser().getEmail(), tokenStr);
 
         linkRole(user, "RIDER");
     }
@@ -181,5 +212,45 @@ public class AuthService {
         bankDetails.setIfscCode(req.getIfscCode());
         bankDetails.setBankName(req.getBankName());
         return bankDetails;
+    }
+
+    @Transactional
+    public void verifyEmailToken(String token) {
+        VerificationToken verificationToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Error: Invalid verification link."));
+
+        if (verificationToken.isExpired()) {
+            tokenRepository.delete(verificationToken);
+            throw new RuntimeException("Error: Verification link has expired.");
+        }
+
+        User user = verificationToken.getUser();
+        user.setStatus(Status.ACTIVE); // Activate user account status
+        userRepository.save(user);
+
+        tokenRepository.delete(verificationToken); // Clean up verification token record
+    }
+
+    @Transactional
+    public void resendVerification(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            // Already verified — nothing to resend. Caller gets the same
+            // generic response regardless, so this branch is invisible externally.
+            if (user.getStatus() != Status.PENDING_VERIFICATION) {
+                return;
+            }
+
+            // Invalidate any existing token(s) for this user before issuing a new one,
+            // so only one valid verification link exists at a time.
+            tokenRepository.deleteByUser(user);
+
+            String tokenStr = UUID.randomUUID().toString();
+            VerificationToken verificationToken = new VerificationToken(tokenStr, user);
+            tokenRepository.save(verificationToken);
+
+            emailService.sendVerificationEmail(user.getEmail(), tokenStr);
+        });
+        // No else branch: unknown email -> silently no-op. Controller always
+        // returns the same generic message either way.
     }
 }
