@@ -1,8 +1,8 @@
 package com.ashraf.config;
 
-import com.ashraf.security.CustomUserDetails;
-import com.ashraf.security.UserDetailsServiceImpl;
-import com.ashraf.utils.JWTUtil;
+import com.ashraf.customer.security.CustomUserDetails;
+import com.ashraf.shared.security.UserDetailsServiceImpl;
+import com.ashraf.shared.utils.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

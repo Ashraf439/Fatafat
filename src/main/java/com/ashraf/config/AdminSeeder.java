@@ -1,10 +1,10 @@
 package com.ashraf.config;
 
-import com.ashraf.entity.*;
-import com.ashraf.enums.Status;
-import com.ashraf.exception.PermissionNotFoundException;
-import com.ashraf.exception.RoleNotFoundException;
-import com.ashraf.repository.*;
+import com.ashraf.core.entity.*;
+import com.ashraf.core.enums.Status;
+import com.ashraf.core.repository.*;
+import com.ashraf.shared.exception.PermissionNotFoundException;
+import com.ashraf.shared.exception.RoleNotFoundException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
