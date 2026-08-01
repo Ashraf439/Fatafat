@@ -2,7 +2,7 @@ package com.ashraf.core.entity;
 
 import com.ashraf.core.enums.Status;
 import com.ashraf.customer.entity.Customer;
-import com.ashraf.restaurant.entity.Restaurant;
+import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.rider.entity.Rider;
 import jakarta.persistence.*;
 import lombok.Getter;

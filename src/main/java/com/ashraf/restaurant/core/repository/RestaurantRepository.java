@@ -1,6 +1,6 @@
-package com.ashraf.restaurant.repository;
+package com.ashraf.restaurant.core.repository;
 
-import com.ashraf.restaurant.entity.Restaurant;
+import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.core.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 

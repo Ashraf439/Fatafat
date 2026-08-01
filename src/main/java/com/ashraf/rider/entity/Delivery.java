@@ -1,7 +1,7 @@
 package com.ashraf.rider.entity;
 
 import com.ashraf.rider.enums.DeliveryStatus;
-import com.ashraf.restaurant.entity.Order;
+import com.ashraf.restaurant.core.entity.Order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

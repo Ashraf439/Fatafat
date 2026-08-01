@@ -19,6 +19,9 @@ public class RestaurantOnboardingApplicationRequest {
     private String city;
 
     @NotBlank
+    private String state;
+
+    @NotBlank
     @Pattern(regexp = "^[0-9]{6}$", message = "Pincode must be 6 digits")
     private String pincode;
 
@@ -40,10 +43,7 @@ public class RestaurantOnboardingApplicationRequest {
     @NotBlank
     private String bankName;
 
-
     @NotBlank
     @Pattern(regexp = "^[A-Z]{4}0[A-Z0-9]{6}$", message = "Invalid IFSC code")
     private String ifscCode;
-
-    // getters/setters — write these yourself
 }

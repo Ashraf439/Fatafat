@@ -1,6 +1,6 @@
-package com.ashraf.restaurant.entity;
+package com.ashraf.restaurant.core.entity;
 
-import com.ashraf.restaurant.enums.FoodType;
+import com.ashraf.restaurant.core.enums.FoodType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

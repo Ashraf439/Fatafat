@@ -1,4 +1,4 @@
-package com.ashraf.restaurant.onboarding.payment;
+package com.ashraf.restaurant.payment;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;

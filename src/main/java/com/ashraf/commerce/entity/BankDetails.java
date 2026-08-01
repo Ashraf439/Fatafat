@@ -1,6 +1,6 @@
 package com.ashraf.commerce.entity;
 
-import com.ashraf.restaurant.entity.Restaurant;
+import com.ashraf.restaurant.core.entity.Restaurant;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

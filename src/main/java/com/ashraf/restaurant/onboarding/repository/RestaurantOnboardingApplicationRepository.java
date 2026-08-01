@@ -16,4 +16,10 @@ public interface RestaurantOnboardingApplicationRepository
 
     Optional<RestaurantOnboardingApplication> findByUser_IdAndStatusIn(
             Long userId, List<RestaurantOnboardingStatus> statuses);
+
+    List<RestaurantOnboardingApplication> findByStatus(RestaurantOnboardingStatus status);
+
+    List<RestaurantOnboardingApplication> findAllByOrderByIdDesc();
+
+    Optional<RestaurantOnboardingApplication> findFirstByUser_IdOrderByAttemptNumberDesc(Long userId);
 }

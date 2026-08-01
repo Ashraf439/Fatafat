@@ -1,4 +1,4 @@
-package com.ashraf.restaurant.onboarding.payment;
+package com.ashraf.restaurant.payment;
 
 public enum OnboardingPaymentStatus {
     CREATED,

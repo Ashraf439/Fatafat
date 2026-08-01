@@ -1,12 +1,12 @@
 package com.ashraf.admin;
 
-import com.ashraf.restaurant.entity.Restaurant;
+import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.rider.entity.Rider;
 import com.ashraf.core.entity.User;
 import com.ashraf.core.enums.Status;
 import com.ashraf.shared.exception.AccountAlreadyActivatedException;
 import com.ashraf.shared.exception.UserDoesNotExistException;
-import com.ashraf.restaurant.repository.RestaurantRepository;
+import com.ashraf.restaurant.core.repository.RestaurantRepository;
 import com.ashraf.rider.repository.RiderRepository;
 import com.ashraf.core.repository.UserRepository;
 import jakarta.transaction.Transactional;

@@ -1,4 +1,4 @@
-package com.ashraf.restaurant.enums;
+package com.ashraf.restaurant.core.enums;
 
 public enum FoodType {
     VEG, NON_VEG, EGG

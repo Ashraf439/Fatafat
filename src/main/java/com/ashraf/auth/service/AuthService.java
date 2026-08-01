@@ -11,16 +11,9 @@ import com.ashraf.customer.entity.Customer;
 import com.ashraf.customer.repository.CustomerRepository;
 import com.ashraf.customer.security.CustomUserDetails;
 import com.ashraf.commerce.dto.AddressRequest;
-import com.ashraf.commerce.dto.BankRequest;
 import com.ashraf.auth.dto.LoginRequest;
 import com.ashraf.customer.entity.CustomerAddress;
-import com.ashraf.commerce.entity.BankDetails;
 import com.ashraf.commerce.repository.CustomerAddressRepository;
-import com.ashraf.restaurant.dto.RestaurantRegisterRequest;
-import com.ashraf.restaurant.entity.Restaurant;
-import com.ashraf.restaurant.entity.RestaurantAddress;
-import com.ashraf.restaurant.repository.RestaurantAddressRepository;
-import com.ashraf.restaurant.repository.RestaurantRepository;
 import com.ashraf.rider.dto.RiderRegisterRequest;
 import com.ashraf.rider.entity.Rider;
 import com.ashraf.rider.repository.RiderRepository;
@@ -45,8 +38,6 @@ public class AuthService {
     private final CustomerRepository customerRepository;
     private final RiderRepository riderRepository;
     private final CustomerAddressRepository customerAddressRepository;
-    private final RestaurantAddressRepository restaurantAddressRepository;
-    private final RestaurantRepository restaurantRepository;
     private final RolesRepository rolesRepository;
     private final UserRolesRepository userRolesRepository;
     private final JWTUtil jwtUtil;
@@ -57,16 +48,14 @@ public class AuthService {
     private final EmailService emailService;
 
     public AuthService(UserRepository userRepository, CustomerRepository customerRepository,
-                       RiderRepository riderRepository, CustomerAddressRepository customerAddressRepository, RestaurantAddressRepository restaurantAddressRepository,
-                       RestaurantRepository restaurantRepository, RolesRepository rolesRepository,
+                       RiderRepository riderRepository, CustomerAddressRepository customerAddressRepository,
+                       RolesRepository rolesRepository,
                        UserRolesRepository userRolesRepository, JWTUtil jwtUtil,
                        AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService, TokenRepository tokenRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
         this.riderRepository = riderRepository;
         this.customerAddressRepository = customerAddressRepository;
-        this.restaurantAddressRepository = restaurantAddressRepository;
-        this.restaurantRepository = restaurantRepository;
         this.rolesRepository = rolesRepository;
         this.userRolesRepository = userRolesRepository;
         this.jwtUtil = jwtUtil;
@@ -135,44 +124,6 @@ public class AuthService {
     }
 
     @Transactional
-    public void registerRestaurant(RestaurantRegisterRequest req) {
-        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException("Email already registered");
-        }
-        User user = new User();
-        user.setEmail(req.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-        user.setStatus(Status.PENDING_VERIFICATION);
-        user = userRepository.save(user);
-
-        RestaurantAddress restaurantAddress = new RestaurantAddress();
-        restaurantAddress.setCity(req.getAddress().getCity());
-        restaurantAddress.setState(req.getAddress().getState());
-        restaurantAddress.setPincode(req.getAddress().getPincode());
-        restaurantAddress.setStreet(req.getAddress().getStreet());
-
-        restaurantAddressRepository.save(restaurantAddress);
-
-        Restaurant restaurant = new Restaurant();
-        restaurant.setOwnerUser(user);
-        restaurant.setName(req.getName());
-        restaurant.setFssaiLicense(req.getFssaiLicense());
-        restaurant.setGstin(req.getGstin());
-        restaurant.setRestaurantAddress(restaurantAddress);
-        restaurant.setBankDetails(buildBankDetails(req.getBankDetails(), restaurant));
-        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
-
-
-        String tokenStr = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(tokenStr, savedRestaurant.getOwnerUser());
-        tokenRepository.save(verificationToken);
-
-        // 3. Dispatch the verification link
-        emailService.sendVerificationEmail(savedRestaurant.getOwnerUser().getEmail(), tokenStr);
-        linkRole(user, "RESTAURANT");
-    }
-
-    @Transactional
     public void registerRider(RiderRegisterRequest req) {
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("Email already registered");
@@ -229,17 +180,6 @@ public class AuthService {
         address.setPincode(req.getPincode());
         address.setStreet(req.getStreet());
         return address;
-    }
-
-    // TODO : create separate bank details eg:customer bank details
-    private BankDetails buildBankDetails(BankRequest req, Restaurant restaurant) {
-        BankDetails bankDetails = new BankDetails();
-        bankDetails.setRestaurant(restaurant);
-        bankDetails.setAccountHolderName(req.getAccountHolderName());
-        bankDetails.setAccountNumber(req.getAccountNumber()); // TODO: encrypt at rest
-        bankDetails.setIfscCode(req.getIfscCode());
-        bankDetails.setBankName(req.getBankName());
-        return bankDetails;
     }
 
     @Transactional

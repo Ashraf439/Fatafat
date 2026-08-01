@@ -3,19 +3,23 @@ package com.ashraf.auth.controller;
 import com.ashraf.auth.dto.LoginRequest;
 import com.ashraf.auth.dto.LoginResponse;
 import com.ashraf.auth.dto.ResendVerificationRequest;
-import com.ashraf.shared.ratelimit.RateLimit;
-import com.ashraf.customer.dto.CustomerRegisterRequest;
-import com.ashraf.core.entity.User;
-import com.ashraf.restaurant.dto.RestaurantRegisterRequest;
-import com.ashraf.rider.dto.RiderRegisterRequest;
 import com.ashraf.auth.service.AuthService;
 import com.ashraf.auth.service.EmailService;
 import com.ashraf.auth.service.LoginResult;
+import com.ashraf.core.entity.User;
+import com.ashraf.customer.dto.CustomerRegisterRequest;
+import com.ashraf.restaurant.core.dto.RestaurantRegisterRequest;
+import com.ashraf.restaurant.core.service.RestaurantAuthService;
+import com.ashraf.rider.dto.RiderRegisterRequest;
+import com.ashraf.shared.ratelimit.RateLimit;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -23,14 +27,18 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    @Value("${frontend.restaurant-url:http://localhost:5173}")
+    private String frontendUrl;
     @Value(("${jwt.expiration-ms}"))
     private long jwtExpirationMs;
     private final AuthService authService;
     private final EmailService emailService;
+    private final RestaurantAuthService restaurantAuthService;
 
-    public AuthController(AuthService authService, EmailService emailService) {
+    public AuthController(AuthService authService, EmailService emailService, RestaurantAuthService restaurantAuthService) {
         this.authService = authService;
         this.emailService = emailService;
+        this.restaurantAuthService = restaurantAuthService;
     }
 
     @PostMapping("register/customer")
@@ -43,10 +51,9 @@ public class AuthController {
     }
 
     @PostMapping("register/restaurant")
-    //@RateLimit(limit = 5, timeWindow = 60)
     public ResponseEntity<Map<String, String>> registerRestaurant(@Valid @RequestBody RestaurantRegisterRequest req) {
-        authService.registerRestaurant(req);
-        return ResponseEntity.ok(Map.of("message","Restaurant registered. Pending approval."));
+        restaurantAuthService.registerRestaurant(req);
+        return ResponseEntity.ok(Map.of("message", "Restaurant registered. Please verify your email, then track your application status."));
     }
 
     @PostMapping("register/rider")
@@ -90,15 +97,15 @@ public class AuthController {
         return ResponseEntity.ok(new LoginResponse(account, tokens));
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) {
-        try {
-            authService.verifyEmailToken(token);
-            return ResponseEntity.ok("Account verified successfully! You can now log in.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+//    @GetMapping("/verify")
+//    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) {
+//        try {
+//            authService.verifyEmailToken(token);
+//            return ResponseEntity.ok("Account verified successfully! You can now log in.");
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
 
     @PostMapping("resend-verification")
     @RateLimit(limit = 3, timeWindow = 300) // adjust once you confirm how RateLimit is keyed
@@ -107,5 +114,19 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
                 "message", "If that email is registered and not yet verified, a new verification link has been sent."
         ));
+    }
+    @GetMapping("/verify")
+    public ResponseEntity<Void> verifyAccount(@RequestParam("token") String token) {
+        try {
+            authService.verifyEmailToken(token);
+            return ResponseEntity.status(302)
+                    .location(URI.create(frontendUrl + "?verified=true"))
+                    .build();
+        } catch (RuntimeException e) {
+            String msg = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+            return ResponseEntity.status(302)
+                    .location(URI.create(frontendUrl + "?verified=false&error=" + msg))
+                    .build();
+        }
     }
 }

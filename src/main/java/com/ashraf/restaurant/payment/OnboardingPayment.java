@@ -1,9 +1,11 @@
-package com.ashraf.restaurant.onboarding.payment;
+package com.ashraf.restaurant.payment;
 
 import com.ashraf.restaurant.onboarding.entity.RestaurantOnboardingApplication;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -33,9 +35,11 @@ public class OnboardingPayment {
     @Column(nullable = false)
     private OnboardingPaymentStatus onboardingPaymentStatus;
 
+    @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     private LocalDateTime paidAt;

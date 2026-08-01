@@ -1,9 +1,9 @@
-package com.ashraf.restaurant.entity;
+package com.ashraf.restaurant.core.entity;
 
 import com.ashraf.customer.entity.Customer;
 import com.ashraf.customer.entity.CustomerAddress;
 import com.ashraf.rider.entity.Delivery;
-import com.ashraf.restaurant.enums.OrderStatus;
+import com.ashraf.restaurant.core.enums.OrderStatus;
 import com.ashraf.commerce.enums.PaymentMethod;
 import com.ashraf.commerce.enums.PaymentStatus;
 import jakarta.persistence.*;

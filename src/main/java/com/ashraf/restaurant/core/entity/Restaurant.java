@@ -1,4 +1,4 @@
-package com.ashraf.restaurant.entity;
+package com.ashraf.restaurant.core.entity;
 
 import com.ashraf.commerce.entity.BankDetails;
 import com.ashraf.core.entity.User;
@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -28,9 +29,8 @@ public class Restaurant {
 
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = false)
-    private RestaurantAddress restaurantAddress;
+    @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+    private List<RestaurantAddress> addresses = new ArrayList<>();
 
     private String fssaiLicense;
 

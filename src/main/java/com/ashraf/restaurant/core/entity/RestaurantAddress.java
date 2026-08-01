@@ -1,4 +1,4 @@
-package com.ashraf.restaurant.entity;
+package com.ashraf.restaurant.core.entity;
 
 import com.ashraf.commerce.enums.AddressType;
 import jakarta.persistence.*;
