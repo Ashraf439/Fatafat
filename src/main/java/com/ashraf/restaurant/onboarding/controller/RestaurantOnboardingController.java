@@ -1,11 +1,11 @@
 package com.ashraf.restaurant.onboarding.controller;
 
 import com.ashraf.customer.security.CustomUserDetails;
+import com.ashraf.payment.OrderResult;
 import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.restaurant.onboarding.dto.ApplicationSummaryResponse;
 import com.ashraf.restaurant.onboarding.dto.ConfirmPaymentRequest;
 import com.ashraf.restaurant.onboarding.dto.RestaurantOnboardingApplicationRequest;
-import com.ashraf.restaurant.payment.OrderResult;
 import com.ashraf.restaurant.onboarding.service.RestaurantOnboardingService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

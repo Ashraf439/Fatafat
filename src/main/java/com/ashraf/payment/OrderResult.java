@@ -1,4 +1,4 @@
-package com.ashraf.restaurant.payment;
+package com.ashraf.payment;
 
 public record OrderResult(String orderId, Long amount) {
 }

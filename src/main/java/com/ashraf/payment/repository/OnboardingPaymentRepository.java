@@ -1,5 +1,6 @@
-package com.ashraf.restaurant.payment;
+package com.ashraf.payment.repository;
 
+import com.ashraf.payment.dto.OnboardingPayment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

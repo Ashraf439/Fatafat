@@ -1,4 +1,13 @@
-package com.ashraf.restaurant.payment;
+package com.ashraf.payment.dto;
+
+import com.ashraf.restaurant.onboarding.entity.RestaurantOnboardingApplication;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 import com.ashraf.restaurant.onboarding.entity.RestaurantOnboardingApplication;
 import jakarta.persistence.*;

@@ -97,16 +97,6 @@ public class AuthController {
         return ResponseEntity.ok(new LoginResponse(account, tokens));
     }
 
-//    @GetMapping("/verify")
-//    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) {
-//        try {
-//            authService.verifyEmailToken(token);
-//            return ResponseEntity.ok("Account verified successfully! You can now log in.");
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
-
     @PostMapping("resend-verification")
     @RateLimit(limit = 3, timeWindow = 300) // adjust once you confirm how RateLimit is keyed
     public ResponseEntity<Map<String, String>> resendVerification(@Valid @RequestBody ResendVerificationRequest req) {
