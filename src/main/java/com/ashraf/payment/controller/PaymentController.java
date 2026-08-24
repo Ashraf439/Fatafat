@@ -1,41 +1,43 @@
 package com.ashraf.payment.controller;
 
-import com.ashraf.payment.service.PaymentService;
-import com.razorpay.RazorpayException;
+import com.ashraf.customer.security.CustomUserDetails;
+import com.ashraf.payment.dto.VerifyPaymentRequest;
+import com.ashraf.restaurant.core.entity.Restaurant;
+import com.ashraf.restaurant.onboarding.service.RestaurantOnboardingService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
-    private final PaymentService paymentService;
 
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
-    }
+    private final RestaurantOnboardingService onboardingService;
 
-    @PostMapping("/createOrder")
-    public String createOrder(double amount, String currency) throws RazorpayException {
-        return paymentService.createOrder(amount, currency);
+    public PaymentController(RestaurantOnboardingService onboardingService) {
+        this.onboardingService = onboardingService;
     }
 
     @PostMapping("/verify")
-    public ResponseEntity verifyPayment(@RequestParam String orderId,
-                                        @RequestParam String paymentId,
-                                        @RequestParam String razorpaySignature) {
-        try {
-            boolean isValid = paymentService.verifyPayment(orderId, paymentId, razorpaySignature);
-            if (isValid) {
-                return ResponseEntity.ok("Payment verified successfully");
-            } else {
-                return ResponseEntity.status(400).body("Payment verification failed");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error verifying payment");
-        }
-    }
+    public ResponseEntity<Map<String, String>> verifyPayment(
+            @Valid @RequestBody VerifyPaymentRequest request,
+            @AuthenticationPrincipal CustomUserDetails principal) {
 
+        Restaurant restaurant = onboardingService.verifyAndConfirmPayment(
+                principal.getUser(),
+                request.getOrderId(),
+                request.getPaymentId(),
+                request.getRazorpaySignature()
+        );
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "Payment verified successfully",
+                        "restaurantId", restaurant.getId().toString()
+                )
+        );
+    }
 }

@@ -1,14 +1,6 @@
 package com.ashraf.payment.dto;
 
-import com.ashraf.restaurant.onboarding.entity.RestaurantOnboardingApplication;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
-
+import com.ashraf.payment.enums.OnboardingPaymentStatus;
 import com.ashraf.restaurant.onboarding.entity.RestaurantOnboardingApplication;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,12 +15,14 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class OnboardingPayment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id", nullable = false, unique = true)
+    @JoinColumn(name = "application_id", nullable = false, unique = true
+    )
     private RestaurantOnboardingApplication restaurantOnboardingApplication;
 
     @Column(nullable = false, unique = true)
@@ -38,11 +32,14 @@ public class OnboardingPayment {
     private String paymentReference;
 
     @Column(nullable = false)
-    private Long amount;
+    private Double amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OnboardingPaymentStatus onboardingPaymentStatus;
+
+    @Column
+    private String razorPayOrderId;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -52,5 +49,4 @@ public class OnboardingPayment {
     private LocalDateTime updatedAt;
 
     private LocalDateTime paidAt;
-
 }

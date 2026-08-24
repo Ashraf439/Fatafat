@@ -6,12 +6,12 @@ import com.ashraf.payment.OrderResult;
 import com.ashraf.payment.dto.OnboardingPayment;
 import com.ashraf.payment.enums.OnboardingPaymentStatus;
 import com.ashraf.payment.repository.OnboardingPaymentRepository;
+import com.ashraf.payment.service.PaymentService;
 import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.restaurant.core.entity.RestaurantAddress;
 import com.ashraf.restaurant.core.repository.RestaurantAddressRepository;
 import com.ashraf.restaurant.core.repository.RestaurantRepository;
 import com.ashraf.restaurant.onboarding.dto.ApplicationSummaryResponse;
-import com.ashraf.restaurant.onboarding.dto.ConfirmPaymentRequest;
 import com.ashraf.restaurant.onboarding.dto.RejectApplicationRequest;
 import com.ashraf.restaurant.onboarding.dto.RestaurantOnboardingApplicationRequest;
 import com.ashraf.restaurant.onboarding.entity.RestaurantOnboardingApplication;
@@ -21,6 +21,7 @@ import com.ashraf.shared.exception.ApplicationAlreadyActiveException;
 import com.ashraf.shared.exception.ApplicationNotFoundException;
 import com.ashraf.shared.exception.InvalidApplicationStateException;
 import com.ashraf.shared.exception.PaymentNotFoundException;
+import com.razorpay.RazorpayException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,37 +36,29 @@ public class RestaurantOnboardingService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantAddressRepository restaurantAddressRepository;
     private final OnboardingPaymentRepository paymentRepository;
-    private final PaymentGatewayService paymentGatewayService;
+    private final PaymentService paymentService;
 
 
     @Value("${onboarding.fee.amount}")
-    private Long onboardingFeeAmount;
+    private double onboardingFeeAmount;
 
-    public RestaurantOnboardingService(RestaurantOnboardingApplicationRepository restaurantOnboardingApplicationRepository, RestaurantRepository restaurantRepository, RestaurantAddressRepository restaurantAddressRepository, OnboardingPaymentRepository paymentRepository, PaymentGatewayService paymentGatewayService) {
+    public RestaurantOnboardingService(RestaurantOnboardingApplicationRepository restaurantOnboardingApplicationRepository, RestaurantRepository restaurantRepository, RestaurantAddressRepository restaurantAddressRepository, OnboardingPaymentRepository paymentRepository, PaymentService paymentService) {
         this.restaurantOnboardingApplicationRepository = restaurantOnboardingApplicationRepository;
         this.restaurantRepository = restaurantRepository;
         this.restaurantAddressRepository = restaurantAddressRepository;
         this.paymentRepository = paymentRepository;
-        this.paymentGatewayService = paymentGatewayService;
+        this.paymentService = paymentService;
     }
 
     @Transactional
     public void submitApplication(User user, RestaurantOnboardingApplicationRequest request) {
-        boolean hasActiveApplication  = restaurantOnboardingApplicationRepository.findByUser_IdAndStatusIn(user.getId(), List.of(
-                RestaurantOnboardingStatus.UNDER_REVIEW,RestaurantOnboardingStatus.APPROVED_PENDING_PAYMENT
-        )).isPresent();
+        boolean hasActiveApplication = restaurantOnboardingApplicationRepository.findByUser_IdAndStatusIn(user.getId(), List.of(RestaurantOnboardingStatus.UNDER_REVIEW, RestaurantOnboardingStatus.APPROVED_PENDING_PAYMENT)).isPresent();
 
         if (hasActiveApplication) {
-            throw new ApplicationAlreadyActiveException(
-                    "You already have an application under review or awaiting payment.");
+            throw new ApplicationAlreadyActiveException("You already have an application under review or awaiting payment.");
         }
 
-        int nextAttemptNumber = restaurantOnboardingApplicationRepository
-                .findByUser_IdOrderByAttemptNumberDesc(user.getId())
-                .stream()
-                .findFirst()
-                .map(app -> app.getAttemptNumber() + 1)
-                .orElse(1);
+        int nextAttemptNumber = restaurantOnboardingApplicationRepository.findByUser_IdOrderByAttemptNumberDesc(user.getId()).stream().findFirst().map(app -> app.getAttemptNumber() + 1).orElse(1);
 
         RestaurantOnboardingApplication application = new RestaurantOnboardingApplication();
         application.setUser(user);
@@ -88,12 +81,10 @@ public class RestaurantOnboardingService {
 
     @Transactional
     public RestaurantOnboardingApplication approveApplication(Long applicationId, User admin) {
-        RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository.findById(applicationId)
-                .orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
+        RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository.findById(applicationId).orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
 
         if (application.getStatus() != RestaurantOnboardingStatus.UNDER_REVIEW) {
-            throw new InvalidApplicationStateException(
-                    "Only applications under review can be approved. Current status: " + application.getStatus());
+            throw new InvalidApplicationStateException("Only applications under review can be approved. Current status: " + application.getStatus());
         }
 
         application.setStatus(RestaurantOnboardingStatus.APPROVED_PENDING_PAYMENT);
@@ -108,12 +99,10 @@ public class RestaurantOnboardingService {
 
     @Transactional
     public RestaurantOnboardingApplication rejectApplication(Long applicationId, User admin, RejectApplicationRequest request) {
-        RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository.findById(applicationId)
-                .orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
+        RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository.findById(applicationId).orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
 
         if (application.getStatus() != RestaurantOnboardingStatus.UNDER_REVIEW) {
-            throw new InvalidApplicationStateException(
-                    "Only applications under review can be rejected. Current status: " + application.getStatus());
+            throw new InvalidApplicationStateException("Only applications under review can be rejected. Current status: " + application.getStatus());
         }
 
         application.setStatus(RestaurantOnboardingStatus.REJECTED);
@@ -127,122 +116,182 @@ public class RestaurantOnboardingService {
     }
 
     @Transactional
-    public OrderResult createPaymentOrder(Long applicationId, User user) {
-        RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository.findById(applicationId)
-                .orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
+    public OrderResult createPaymentOrder(Long applicationId, User user) throws RazorpayException {
 
+        RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository.findById(applicationId).orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
+
+
+        // Make sure the application belongs to this user
         if (!application.getUser().getId().equals(user.getId())) {
+
             throw new InvalidApplicationStateException("This application does not belong to you.");
         }
 
+
+        // Only approved applications can pay
         if (application.getStatus() != RestaurantOnboardingStatus.APPROVED_PENDING_PAYMENT) {
-            throw new InvalidApplicationStateException(
-                    "Payment can only be initiated for approved applications. Current status: " + application.getStatus());
+
+            throw new InvalidApplicationStateException("Payment can only be initiated for approved applications. " + "Current status: " + application.getStatus());
         }
 
-        // reuse an existing CREATED payment instead of inserting a duplicate
-        Optional<OnboardingPayment> existing = paymentRepository.findByRestaurantOnboardingApplication_Id(applicationId);
-        if (existing.isPresent() && existing.get().getOnboardingPaymentStatus() == OnboardingPaymentStatus.CREATED) {
-            OnboardingPayment payment = existing.get();
-            return new OrderResult(payment.getOrderId(), payment.getAmount());
+
+        // -----------------------------------------------------
+        // Reuse existing unpaid order
+        // -----------------------------------------------------
+
+        Optional<OnboardingPayment> existingPayment = paymentRepository.findByRestaurantOnboardingApplication_Id(applicationId);
+
+
+        if (existingPayment.isPresent()) {
+            OnboardingPayment payment = existingPayment.get();
+            if (payment.getOnboardingPaymentStatus() == OnboardingPaymentStatus.CREATED) {
+                return new OrderResult(payment.getOrderId(), payment.getAmount().longValue());
+            }
+
+            if (payment.getOnboardingPaymentStatus() == OnboardingPaymentStatus.PAID) {
+
+                throw new InvalidApplicationStateException("Payment has already been completed.");
+            }
         }
 
-        OrderResult orderResult = paymentGatewayService.createOrder(applicationId, onboardingFeeAmount);
+
+        // -----------------------------------------------------
+        // Create Razorpay order
+        // -----------------------------------------------------
+
+        OrderResult orderResult = paymentService.createOrder(applicationId, onboardingFeeAmount);
+
+
+        // -----------------------------------------------------
+        // Save payment record
+        // -----------------------------------------------------
 
         OnboardingPayment payment = new OnboardingPayment();
+
         payment.setRestaurantOnboardingApplication(application);
+
         payment.setOrderId(orderResult.orderId());
-        payment.setAmount(orderResult.amount());
+
+        payment.setAmount((double) orderResult.amount());
+
         payment.setOnboardingPaymentStatus(OnboardingPaymentStatus.CREATED);
 
+
         paymentRepository.save(payment);
+
 
         return orderResult;
     }
 
     @Transactional
-    public Restaurant confirmPayment(ConfirmPaymentRequest request) {
+    public Restaurant verifyAndConfirmPayment(User user, String orderId, String paymentId, String razorpaySignature) {
 
-        OnboardingPayment payment = paymentRepository.findByOrderId(request.getOrderId())
-                .orElseThrow(() -> new PaymentNotFoundException("No payment found for order: " + request.getOrderId()));
+        boolean valid = paymentService.verifyPayment(orderId, paymentId, razorpaySignature);
 
-        if (payment.getOnboardingPaymentStatus() == OnboardingPaymentStatus.PAID) {
-            throw new InvalidApplicationStateException("Payment already confirmed for this order.");
+        if (!valid) {
+            throw new InvalidApplicationStateException("Payment verification failed.");
         }
 
-        payment.setOnboardingPaymentStatus(OnboardingPaymentStatus.PAID);
-        payment.setPaymentReference(request.getPaymentReference());
-        payment.setPaidAt(LocalDateTime.now());
-        paymentRepository.save(payment);
+        OnboardingPayment payment = paymentRepository.findByOrderId(orderId).orElseThrow(() -> new PaymentNotFoundException("No payment found for order: " + orderId));
 
         RestaurantOnboardingApplication application = payment.getRestaurantOnboardingApplication();
 
+        // Security: payment must belong to the logged-in user
+        if (!application.getUser().getId().equals(user.getId())) {
+            throw new InvalidApplicationStateException("This payment does not belong to you.");
+        }
+
+        // Payment must be for an approved application
+        if (application.getStatus() != RestaurantOnboardingStatus.APPROVED_PENDING_PAYMENT) {
+
+            if (payment.getOnboardingPaymentStatus() == OnboardingPaymentStatus.PAID) {
+
+                throw new InvalidApplicationStateException("Payment has already been completed.");
+            }
+
+            throw new InvalidApplicationStateException("Payment is not allowed for the current application state: " + application.getStatus());
+        }
+
+        // Prevent duplicate payment processing
+        if (payment.getOnboardingPaymentStatus() == OnboardingPaymentStatus.PAID) {
+
+            throw new InvalidApplicationStateException("Payment has already been completed.");
+        }
+
+        /*
+         * Payment has now been cryptographically verified.
+         * Store Razorpay's payment ID.
+         */
+        payment.setOnboardingPaymentStatus(OnboardingPaymentStatus.PAID);
+
+        payment.setPaymentReference(paymentId);
+
+        payment.setPaidAt(LocalDateTime.now());
+
+        paymentRepository.save(payment);
+
+        /*
+         * Create restaurant.
+         */
         RestaurantAddress address = new RestaurantAddress();
+
         address.setStreet(application.getAddressLine());
         address.setCity(application.getCity());
         address.setState(application.getState());
         address.setCountry("India");
         address.setPincode(application.getPincode());
-        // Restaurant.restaurantAddress is a plain @ManyToOne with no cascade, and the
-        // column is nullable = false, so the address must exist in the DB before a
-        // Restaurant can reference it.
+
         address = restaurantAddressRepository.save(address);
 
         BankDetails bankDetails = new BankDetails();
+
         bankDetails.setAccountHolderName(application.getAccountHolderName());
+
         bankDetails.setAccountNumber(application.getAccountNumber());
+
         bankDetails.setBankName(application.getBankName());
+
         bankDetails.setIfscCode(application.getIfscCode());
 
         Restaurant restaurant = new Restaurant();
+
         restaurant.setOwnerUser(application.getUser());
+
         restaurant.setName(application.getRestaurantName());
+
         restaurant.setFssaiLicense(application.getFssaiLicense());
+
         restaurant.setGstin(application.getGstin());
+
         restaurant.setAddresses(List.of(address));
+
         restaurant.setBankDetails(bankDetails);
-        // BankDetails owns the FK (restaurant_id, nullable = false). Restaurant's side
-        // of the relationship is mappedBy, so cascading the save from Restaurant only
-        // works if the owning side's back-reference is set here too.
+
         bankDetails.setRestaurant(restaurant);
+
         restaurant.setIsOpen(true);
+
         restaurant.setRestaurantOnboardingStatus(RestaurantOnboardingStatus.LIVE);
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
+        /*
+         * Application is now fully onboarded.
+         */
         application.setStatus(RestaurantOnboardingStatus.LIVE);
+
         restaurantOnboardingApplicationRepository.save(application);
 
         return savedRestaurant;
     }
-    public List<ApplicationSummaryResponse> listApplications(RestaurantOnboardingStatus status) {
-        List<RestaurantOnboardingApplication> applications = (status != null)
-                ? restaurantOnboardingApplicationRepository.findByStatus(status)
-                : restaurantOnboardingApplicationRepository.findAllByOrderByIdDesc();
 
-        return applications.stream()
-                .map(app -> new ApplicationSummaryResponse(
-                        app.getId(),
-                        app.getRestaurantName(),
-                        app.getUser().getEmail(),
-                        app.getCity(),
-                        app.getState(),
-                        app.getStatus(),
-                        app.getAttemptNumber()
-                ))
-                .toList();
+    public List<ApplicationSummaryResponse> listApplications(RestaurantOnboardingStatus status) {
+        List<RestaurantOnboardingApplication> applications = (status != null) ? restaurantOnboardingApplicationRepository.findByStatus(status) : restaurantOnboardingApplicationRepository.findAllByOrderByIdDesc();
+
+        return applications.stream().map(app -> new ApplicationSummaryResponse(app.getId(), app.getRestaurantName(), app.getUser().getEmail(), app.getCity(), app.getState(), app.getStatus(), app.getAttemptNumber())).toList();
     }
+
     public Optional<ApplicationSummaryResponse> getMyApplication(User user) {
-        return restaurantOnboardingApplicationRepository
-                .findFirstByUser_IdOrderByAttemptNumberDesc(user.getId())
-                .map(app -> new ApplicationSummaryResponse(
-                        app.getId(),
-                        app.getRestaurantName(),
-                        app.getUser().getEmail(),
-                        app.getCity(),
-                        app.getState(),
-                        app.getStatus(),
-                        app.getAttemptNumber()
-                ));
+        return restaurantOnboardingApplicationRepository.findFirstByUser_IdOrderByAttemptNumberDesc(user.getId()).map(app -> new ApplicationSummaryResponse(app.getId(), app.getRestaurantName(), app.getUser().getEmail(), app.getCity(), app.getState(), app.getStatus(), app.getAttemptNumber()));
     }
 }
