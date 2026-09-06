@@ -67,10 +67,13 @@ public class AdminSeeder implements CommandLineRunner {
     private void seedRolePermissions() throws RoleNotFoundException {
         Map<String,List<String>> mapRolePermissions = new HashMap<>();
         mapRolePermissions.put("CUSTOMER", List.of("RATING_ADD", "COMPLAINT_ADD"));
-        mapRolePermissions.put("RESTAURANT",List.of("MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL"));
+        mapRolePermissions.put("RESTAURANT",List.of("MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL","STAFF_ADD","STAFF_REMOVE","STAFF_MANAGE_PERMISSIONS"));
         mapRolePermissions.put("RIDER",List.of( "DELIVERY_ACCEPT", "DELIVERY_CANCEL"));
         mapRolePermissions.put("ADMIN",List.of("RESTAURANT_APPROVE", "RIDER_APPROVE","RESTAURANT_REMOVE","RIDER_REMOVE"));
         mapRolePermissions.put("SUPER_ADMIN",List.of("ROLE_ASSIGN", "ADMIN_ADD","ADMIN_REMOVE"));
+        mapRolePermissions.put("RESTAURANT_MANAGER", List.of("MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL", "STAFF_ADD"));
+        mapRolePermissions.put("RESTAURANT_STAFF", List.of("ORDER_ACCEPT", "ORDER_CANCEL"));
+        mapRolePermissions.put("RESTAURANT_CASHIER",List.of("ORDER_ACCEPT"));
         for(Map.Entry<String, List<String>> entry: mapRolePermissions.entrySet()) {
             String role = entry.getKey();
             List<String> permissions = entry.getValue();
@@ -92,7 +95,8 @@ public class AdminSeeder implements CommandLineRunner {
     private void seedPermissions() {
         List<String> permissions = List.of("RATING_ADD", "COMPLAINT_ADD", "DELIVERY_ACCEPT", "DELIVERY_CANCEL",
                 "MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL",
-                "RESTAURANT_APPROVE", "RIDER_APPROVE","RESTAURANT_REMOVE","RIDER_REMOVE", "ROLE_ASSIGN", "ADMIN_ADD","ADMIN_REMOVE");
+                "RESTAURANT_APPROVE", "RIDER_APPROVE","RESTAURANT_REMOVE","RIDER_REMOVE", "ROLE_ASSIGN", "ADMIN_ADD","ADMIN_REMOVE",
+                "STAFF_ADD", "STAFF_REMOVE", "STAFF_MANAGE_PERMISSIONS");
         for(String permission:permissions) {
             if(!permissionRepository.existsByName(permission)) {
                 Permissions p = new Permissions();
@@ -104,7 +108,8 @@ public class AdminSeeder implements CommandLineRunner {
 
 
     private void seedRoles() {
-        List<String> roles =  List.of("CUSTOMER", "RESTAURANT", "RIDER", "ADMIN", "SUPER_ADMIN");
+        List<String> roles =  List.of("CUSTOMER", "RESTAURANT", "RIDER", "ADMIN", "SUPER_ADMIN",
+                "RESTAURANT_MANAGER", "RESTAURANT_STAFF", "RESTAURANT_CASHIER");
         for(String role:roles) {
             if(!rolesRepository.existsByName(role)) {
                 Roles r = new Roles();

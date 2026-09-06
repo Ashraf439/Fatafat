@@ -86,9 +86,18 @@ public class AuthService {
         List<String> roleNames = user.getUserRoles().stream()
                 .map(ur -> ur.getRole().getName())
                 .toList();
-        String accessToken = jwtUtil.generateToken(user.getId(), user.getEmail(), roleNames, user.getStatus().name());
+        String accessToken = issueAccessToken(user, roleNames);
         String rawRefreshToken = refreshTokenService.issueRefreshToken(user);
         return new LoginResult(accessToken, rawRefreshToken, user);
+    }
+
+    /**
+     * Mints a fresh access token for an already-authenticated user. Shared by
+     * login() and the /refresh endpoint, which re-issues an access token off
+     * a valid refresh token without re-checking credentials.
+     */
+    public String issueAccessToken(User user, List<String> roleNames) {
+        return jwtUtil.generateToken(user.getId(), user.getEmail(), roleNames, user.getStatus().name());
     }
 
     @Transactional

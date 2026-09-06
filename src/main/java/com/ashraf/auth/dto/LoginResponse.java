@@ -6,11 +6,11 @@ import java.util.List;
 @Getter
 public class LoginResponse {
     private Account account;
-    private Tokens tokens;
+    private long expiresAt;
 
-    public LoginResponse(Account account, Tokens tokens) {
+    public LoginResponse(Account account, long expiresAt) {
         this.account = account;
-        this.tokens = tokens;
+        this.expiresAt = expiresAt;
     }
 
     @Getter
@@ -29,19 +29,6 @@ public class LoginResponse {
             this.status = status;
             this.roles = roles;
             this.createdAt = createdAt;
-        }
-    }
-
-    @Getter
-    public static class Tokens {
-        private String accessToken;
-        private String refreshToken;
-        private long expiresAt;
-
-        public Tokens(String accessToken, String refreshToken, long expiresAt) {
-            this.accessToken = accessToken;
-            this.refreshToken = refreshToken;
-            this.expiresAt = expiresAt;
         }
     }
 }

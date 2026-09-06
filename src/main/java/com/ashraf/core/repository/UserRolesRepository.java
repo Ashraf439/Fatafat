@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRolesRepository extends JpaRepository<UserRoles, UserRoleId> {
-    //boolean existsByUserRoles_Role_Name(String roleName);
+    void deleteByUser_Id(Long staffUserId);
+    boolean existsByUser_IdAndRole_Name(Long userId, String roleName);
 }

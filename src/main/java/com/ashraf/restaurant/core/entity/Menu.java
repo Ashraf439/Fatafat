@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "menu")
@@ -25,16 +26,15 @@ public class Menu {
     private String dishName;
     private String description;
     private BigDecimal price;
-    private Boolean isAvailable;
 
     @Enumerated(EnumType.STRING)
-    private FoodType foodType; // VEG, NON_VEG, EGG — new enum, near-universal in Indian food apps
+    private FoodType foodType; // VEG, NON_VEG, EGG — near-universal in Indian food apps
     private String category; // "Starters", "Main Course", "Desserts"
     private String imageUrl;
     private Integer preparationTimeMinutes;
 
     @CreationTimestamp
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
     @UpdateTimestamp
-    private java.time.LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 }
