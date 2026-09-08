@@ -71,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/**", "/error").permitAll()
                         .requestMatchers("/api/restaurant/onboarding/payments/webhook").permitAll()  // must come before the rule below
+                        .requestMatchers("/api/customer/restaurants/**").permitAll()
                         .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/restaurant/**").hasAnyRole("RESTAURANT", "RESTAURANT_MANAGER", "RESTAURANT_STAFF", "RESTAURANT_CASHIER")
                         .requestMatchers("/api/rider/**").hasRole("RIDER")
@@ -91,6 +92,7 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+
                 .build();
     }
 

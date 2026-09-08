@@ -1,10 +1,13 @@
 package com.ashraf.restaurant.core.service;
 
 import com.ashraf.core.entity.User;
+import com.ashraf.restaurant.core.dto.RestaurantSummaryResponse;
 import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.restaurant.core.repository.RestaurantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class RestaurantService {
@@ -33,5 +36,12 @@ public class RestaurantService {
         restaurant.setIsOpen(!restaurant.getIsOpen());
         restaurantRepository.save(restaurant);
         return restaurant.getIsOpen();
+    }
+
+    @Transactional
+    public List<RestaurantSummaryResponse> getRestaurantsForCustomer() {
+        List<Restaurant> restaurant = restaurantRepository.findAll();
+
+        return  restaurant.stream().map(r -> new RestaurantSummaryResponse(r.getId(),r.getName(), r.getIsOpen(),r.getAddresses().isEmpty() ? null : r.getAddresses().getFirst().getCity())).toList();
     }
 }

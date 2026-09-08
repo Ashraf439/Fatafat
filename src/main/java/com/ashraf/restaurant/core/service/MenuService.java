@@ -1,6 +1,7 @@
 package com.ashraf.restaurant.core.service;
 
 import com.ashraf.core.entity.User;
+import com.ashraf.restaurant.core.dto.CustomerMenuResponse;
 import com.ashraf.restaurant.core.dto.MenuCsvRow;
 import com.ashraf.restaurant.core.dto.MenuResponse;
 import com.ashraf.restaurant.core.entity.Menu;
@@ -21,6 +22,8 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MenuService {
@@ -124,4 +127,13 @@ public class MenuService {
                 .map(MenuResponse::new)
                 .toList();
     }
+    public CustomerMenuResponse getMenuForCustomer(Long restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found: " + restaurantId));
+        List<Menu> menuItems = menuRepository.findByRestaurant_Id(restaurantId);
+        List<MenuResponse> menuResponses = menuItems.stream().map(MenuResponse::new).toList();
+        Map<String, List<MenuResponse>> grouped = menuResponses.stream().collect(Collectors.groupingBy(MenuResponse::getCategory));
+        return new CustomerMenuResponse(restaurantId, restaurant.getName(), restaurant.getIsOpen(), grouped);
+    }
+
 }
