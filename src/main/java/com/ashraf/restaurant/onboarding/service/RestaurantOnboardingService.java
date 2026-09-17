@@ -7,14 +7,19 @@ import com.ashraf.payment.dto.OnboardingPayment;
 import com.ashraf.payment.enums.OnboardingPaymentStatus;
 import com.ashraf.payment.repository.OnboardingPaymentRepository;
 import com.ashraf.payment.service.PaymentService;
+import com.ashraf.restaurant.core.dto.TimingSlotRequest;
 import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.restaurant.core.entity.RestaurantAddress;
+import com.ashraf.restaurant.core.entity.RestaurantTimings;
 import com.ashraf.restaurant.core.repository.RestaurantAddressRepository;
 import com.ashraf.restaurant.core.repository.RestaurantRepository;
+import com.ashraf.restaurant.core.repository.RestaurantTimingsRepository;
+import com.ashraf.restaurant.core.util.TimingSlotValidator;
 import com.ashraf.restaurant.onboarding.dto.ApplicationSummaryResponse;
 import com.ashraf.restaurant.onboarding.dto.RejectApplicationRequest;
 import com.ashraf.restaurant.onboarding.dto.RestaurantOnboardingApplicationRequest;
 import com.ashraf.restaurant.onboarding.entity.RestaurantOnboardingApplication;
+import com.ashraf.restaurant.onboarding.entity.TimingSlotEmbeddable;
 import com.ashraf.restaurant.onboarding.enums.RestaurantOnboardingStatus;
 import com.ashraf.restaurant.onboarding.repository.RestaurantOnboardingApplicationRepository;
 import com.ashraf.shared.exception.ApplicationAlreadyActiveException;
@@ -35,6 +40,7 @@ public class RestaurantOnboardingService {
     private final RestaurantOnboardingApplicationRepository restaurantOnboardingApplicationRepository;
     private final RestaurantRepository restaurantRepository;
     private final RestaurantAddressRepository restaurantAddressRepository;
+    private final RestaurantTimingsRepository restaurantTimingsRepository;
     private final OnboardingPaymentRepository paymentRepository;
     private final PaymentService paymentService;
 
@@ -42,10 +48,11 @@ public class RestaurantOnboardingService {
     @Value("${onboarding.fee.amount}")
     private double onboardingFeeAmount;
 
-    public RestaurantOnboardingService(RestaurantOnboardingApplicationRepository restaurantOnboardingApplicationRepository, RestaurantRepository restaurantRepository, RestaurantAddressRepository restaurantAddressRepository, OnboardingPaymentRepository paymentRepository, PaymentService paymentService) {
+    public RestaurantOnboardingService(RestaurantOnboardingApplicationRepository restaurantOnboardingApplicationRepository, RestaurantRepository restaurantRepository, RestaurantAddressRepository restaurantAddressRepository, RestaurantTimingsRepository restaurantTimingsRepository, OnboardingPaymentRepository paymentRepository, PaymentService paymentService) {
         this.restaurantOnboardingApplicationRepository = restaurantOnboardingApplicationRepository;
         this.restaurantRepository = restaurantRepository;
         this.restaurantAddressRepository = restaurantAddressRepository;
+        this.restaurantTimingsRepository = restaurantTimingsRepository;
         this.paymentRepository = paymentRepository;
         this.paymentService = paymentService;
     }
@@ -59,6 +66,8 @@ public class RestaurantOnboardingService {
         }
 
         int nextAttemptNumber = restaurantOnboardingApplicationRepository.findByUser_IdOrderByAttemptNumberDesc(user.getId()).stream().findFirst().map(app -> app.getAttemptNumber() + 1).orElse(1);
+
+        TimingSlotValidator.validate(request.getTimings());
 
         RestaurantOnboardingApplication application = new RestaurantOnboardingApplication();
         application.setUser(user);
@@ -74,6 +83,7 @@ public class RestaurantOnboardingService {
         application.setAccountNumber(request.getAccountNumber());
         application.setBankName(request.getBankName());
         application.setIfscCode(request.getIfscCode());
+        application.setTimings(request.getTimings().stream().map(this::toEmbeddable).toList());
         application.setStatus(RestaurantOnboardingStatus.UNDER_REVIEW);
 
         restaurantOnboardingApplicationRepository.save(application);
@@ -155,16 +165,8 @@ public class RestaurantOnboardingService {
         }
 
 
-        // -----------------------------------------------------
-        // Create Razorpay order
-        // -----------------------------------------------------
-
         OrderResult orderResult = paymentService.createOrder(applicationId, onboardingFeeAmount);
 
-
-        // -----------------------------------------------------
-        // Save payment record
-        // -----------------------------------------------------
 
         OnboardingPayment payment = new OnboardingPayment();
 
@@ -275,6 +277,11 @@ public class RestaurantOnboardingService {
 
         Restaurant savedRestaurant = restaurantRepository.save(restaurant);
 
+        List<RestaurantTimings> timings = application.getTimings().stream()
+                .map(slot -> toRestaurantTimings(slot, savedRestaurant))
+                .toList();
+        restaurantTimingsRepository.saveAll(timings);
+
         /*
          * Application is now fully onboarded.
          */
@@ -293,5 +300,22 @@ public class RestaurantOnboardingService {
 
     public Optional<ApplicationSummaryResponse> getMyApplication(User user) {
         return restaurantOnboardingApplicationRepository.findFirstByUser_IdOrderByAttemptNumberDesc(user.getId()).map(app -> new ApplicationSummaryResponse(app.getId(), app.getRestaurantName(), app.getUser().getEmail(), app.getCity(), app.getState(), app.getStatus(), app.getAttemptNumber()));
+    }
+
+    private TimingSlotEmbeddable toEmbeddable(TimingSlotRequest slot) {
+        TimingSlotEmbeddable embeddable = new TimingSlotEmbeddable();
+        embeddable.setDayOfWeek(slot.getDayOfWeek());
+        embeddable.setOpenTime(slot.getOpenTime());
+        embeddable.setCloseTime(slot.getCloseTime());
+        return embeddable;
+    }
+
+    private RestaurantTimings toRestaurantTimings(TimingSlotEmbeddable slot, Restaurant restaurant) {
+        RestaurantTimings timing = new RestaurantTimings();
+        timing.setRestaurant(restaurant);
+        timing.setDayOfWeek(slot.getDayOfWeek());
+        timing.setOpenTime(slot.getOpenTime());
+        timing.setCloseTime(slot.getCloseTime());
+        return timing;
     }
 }

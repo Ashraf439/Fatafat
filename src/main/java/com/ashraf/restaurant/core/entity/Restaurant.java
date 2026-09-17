@@ -38,6 +38,12 @@ public class Restaurant {
 
     private Boolean isOpen = true;
 
+    private String imageUrl;
+
+    // Cloudinary public_id, kept to delete/replace the old image on re-upload.
+    // Not exposed in API responses.
+    private String imagePublicId;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
@@ -46,6 +52,9 @@ public class Restaurant {
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Menu> menuItems;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RestaurantTimings> timings = new ArrayList<>();
 
     @OneToOne(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private BankDetails bankDetails;

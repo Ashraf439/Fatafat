@@ -1,9 +1,14 @@
 package com.ashraf.restaurant.onboarding.dto;
 
+import com.ashraf.restaurant.core.dto.TimingSlotRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -46,4 +51,8 @@ public class RestaurantOnboardingApplicationRequest {
     @NotBlank
     @Pattern(regexp = "^[A-Z]{4}0[A-Z0-9]{6}$", message = "Invalid IFSC code")
     private String ifscCode;
+
+    @NotEmpty(message = "At least one opening-hours shift is required")
+    @Valid
+    private List<TimingSlotRequest> timings;
 }

@@ -9,6 +9,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "restaurant_onboarding_applications")
@@ -54,6 +56,10 @@ public class RestaurantOnboardingApplication {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewed_by_admin_id")
     private User reviewedByAdmin;
+
+    @ElementCollection
+    @CollectionTable(name = "restaurant_onboarding_application_timings", joinColumns = @JoinColumn(name = "application_id"))
+    private List<TimingSlotEmbeddable> timings = new ArrayList<>();
 
     private LocalDateTime reviewedAt;
 

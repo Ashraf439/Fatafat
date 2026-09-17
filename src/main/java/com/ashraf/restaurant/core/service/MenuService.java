@@ -9,6 +9,8 @@ import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.restaurant.core.enums.FoodType;
 import com.ashraf.restaurant.core.repository.MenuRepository;
 import com.ashraf.restaurant.core.repository.RestaurantRepository;
+import com.ashraf.shared.exception.AccessDeniedException;
+import com.ashraf.shared.storage.ImageStorageService;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.stereotype.Service;
@@ -31,13 +33,40 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final RestaurantRepository restaurantRepository;
     private final RestaurantAccessService restaurantAccessService;
+    private final ImageStorageService imageStorageService;
 
     public MenuService(MenuRepository menuRepository,
                        RestaurantRepository restaurantRepository,
-                       RestaurantAccessService restaurantAccessService) {
+                       RestaurantAccessService restaurantAccessService,
+                       ImageStorageService imageStorageService) {
         this.menuRepository = menuRepository;
         this.restaurantRepository = restaurantRepository;
         this.restaurantAccessService = restaurantAccessService;
+        this.imageStorageService = imageStorageService;
+    }
+
+    @Transactional
+    public MenuResponse updateMenuItemImage(User owner, Long menuId, MultipartFile file) {
+        Long restaurantId = restaurantAccessService.resolveRestaurantId(owner);
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new IllegalArgumentException("Menu item not found with ID: " + menuId));
+
+        if (!menu.getRestaurant().getId().equals(restaurantId)) {
+            throw new AccessDeniedException("Menu item does not belong to your restaurant");
+        }
+
+        String oldPublicId = menu.getImagePublicId();
+
+        ImageStorageService.UploadedImage uploaded = imageStorageService.upload(file, "menu/" + restaurantId);
+        menu.setImageUrl(uploaded.url());
+        menu.setImagePublicId(uploaded.publicId());
+        menuRepository.save(menu);
+
+        if (oldPublicId != null) {
+            imageStorageService.delete(oldPublicId);
+        }
+
+        return new MenuResponse(menu);
     }
 
     @Transactional

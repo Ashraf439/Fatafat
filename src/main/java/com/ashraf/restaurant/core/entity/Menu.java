@@ -31,6 +31,11 @@ public class Menu {
     private FoodType foodType; // VEG, NON_VEG, EGG — near-universal in Indian food apps
     private String category; // "Starters", "Main Course", "Desserts"
     private String imageUrl;
+
+    // Cloudinary public_id, kept to delete/replace the old image on re-upload.
+    // Not exposed in API responses.
+    private String imagePublicId;
+
     private Integer preparationTimeMinutes;
 
     @CreationTimestamp
