@@ -9,5 +9,6 @@ public record ApplicationSummaryResponse(
         String city,
         String state,
         RestaurantOnboardingStatus status,
-        Integer attemptNumber
+        Integer attemptNumber,
+        String ownerName
 ) {}

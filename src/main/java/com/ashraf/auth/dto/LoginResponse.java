@@ -16,14 +16,17 @@ public class LoginResponse {
     @Getter
     public static class Account {
         private Long id;
+        private String name;
         private String email;
         private String phoneNumber;
         private String status;
         private List<String> roles;
         private String createdAt;
 
-        public Account(Long id, String email, String phoneNumber, String status, List<String> roles, String createdAt) {
+        public Account(Long id, String name, String email, String phoneNumber, String status, List<String> roles,
+                       String createdAt) {
             this.id = id;
+            this.name = name;
             this.email = email;
             this.phoneNumber = phoneNumber;
             this.status = status;

@@ -20,6 +20,8 @@ public class RestaurantTimings {
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
+    // No row for a given day = closed that day. Multiple rows for the same day
+    // represent separate shifts (e.g. lunch 11:00-15:00, dinner 18:00-23:00).
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DayOfWeek dayOfWeek;

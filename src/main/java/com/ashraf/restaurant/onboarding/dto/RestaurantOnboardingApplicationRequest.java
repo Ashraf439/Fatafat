@@ -55,4 +55,7 @@ public class RestaurantOnboardingApplicationRequest {
     @NotEmpty(message = "At least one opening-hours shift is required")
     @Valid
     private List<TimingSlotRequest> timings;
+
+    @NotBlank(message = "Owner name is required")
+    private String ownerName;
 }

@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity
 @Table(name = "restaurants")
 @Getter
@@ -29,7 +28,9 @@ public class Restaurant {
 
     private String name;
 
-    @OneToMany(mappedBy = "restaurant", fetch = FetchType.LAZY)
+    private String ownerName;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RestaurantAddress> addresses = new ArrayList<>();
 
     private String fssaiLicense;
@@ -51,7 +52,7 @@ public class Restaurant {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Menu> menuItems;
+    private List<Menu> menuItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RestaurantTimings> timings = new ArrayList<>();
@@ -62,9 +63,4 @@ public class Restaurant {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RestaurantOnboardingStatus restaurantOnboardingStatus;
-
-    @PrePersist
-    private void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
 }

@@ -2,6 +2,7 @@ package com.ashraf.restaurant.core.repository;
 
 import com.ashraf.core.enums.Status;
 import com.ashraf.restaurant.core.entity.Restaurant;
+import com.ashraf.restaurant.onboarding.enums.RestaurantOnboardingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,4 +17,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     Optional<Restaurant> findByOwnerUser_Id(Long ownerUserId);
 
     boolean existsByOwnerUser_Id(Long ownerUserId);
+
+    List<Restaurant> findByRestaurantOnboardingStatus(RestaurantOnboardingStatus status);
 }

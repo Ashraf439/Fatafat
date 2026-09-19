@@ -23,6 +23,8 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,7 +59,8 @@ public class MenuService {
 
         String oldPublicId = menu.getImagePublicId();
 
-        ImageStorageService.UploadedImage uploaded = imageStorageService.upload(file, "menu/" + restaurantId);
+        ImageStorageService.UploadedImage uploaded =
+                imageStorageService.upload(file, "menu/" + restaurantId);
         menu.setImageUrl(uploaded.url());
         menu.setImagePublicId(uploaded.publicId());
         menuRepository.save(menu);
@@ -124,7 +127,7 @@ public class MenuService {
             issues.add("Price must be a positive number");
         }
         if (row.getFoodType() == null || parseFoodType(row.getFoodType()) == null) {
-            issues.add("FoodType must be one of " + java.util.Arrays.toString(FoodType.values()));
+            issues.add("FoodType must be one of " + Arrays.toString(FoodType.values()));
         }
 
         return issues.isEmpty() ? null : "row " + rowNum + ": " + String.join(", ", issues);
@@ -149,6 +152,8 @@ public class MenuService {
         menu.setPreparationTimeMinutes(row.getPreparationTimeMinutes());
         return menu;
     }
+
+    @Transactional(readOnly = true)
     public List<MenuResponse> getMenu(User user) {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(user);
         return menuRepository.findByRestaurant_Id(restaurantId)
@@ -156,13 +161,27 @@ public class MenuService {
                 .map(MenuResponse::new)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
     public CustomerMenuResponse getMenuForCustomer(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found: " + restaurantId));
-        List<Menu> menuItems = menuRepository.findByRestaurant_Id(restaurantId);
-        List<MenuResponse> menuResponses = menuItems.stream().map(MenuResponse::new).toList();
-        Map<String, List<MenuResponse>> grouped = menuResponses.stream().collect(Collectors.groupingBy(MenuResponse::getCategory));
-        return new CustomerMenuResponse(restaurantId, restaurant.getName(), restaurant.getIsOpen(), grouped);
-    }
 
+        Map<String, List<MenuResponse>> grouped = menuRepository.findByRestaurant_Id(restaurantId)
+                .stream()
+                .map(MenuResponse::new)
+                .collect(Collectors.groupingBy(
+                        m -> m.getCategory() != null && !m.getCategory().isBlank()
+                                ? m.getCategory()
+                                : "Uncategorized",
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+
+        return new CustomerMenuResponse(
+                restaurantId,
+                restaurant.getName(),
+                restaurant.getIsOpen(),
+                restaurant.getImageUrl(),
+                grouped);
+    }
 }

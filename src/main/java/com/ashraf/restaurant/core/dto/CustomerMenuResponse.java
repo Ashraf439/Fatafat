@@ -10,12 +10,14 @@ public class CustomerMenuResponse {
     private final Long restaurantId;
     private final String restaurantName;
     private final Boolean isOpen;
+    private final String imageUrl;
     private final Map<String, List<MenuResponse>> categories;
 
-    public CustomerMenuResponse(Long restaurantId, String restaurantName, Boolean isOpen, Map<String, List<MenuResponse>> categories) {
+    public CustomerMenuResponse(Long restaurantId, String restaurantName, Boolean isOpen, String imageUrl, Map<String, List<MenuResponse>> categories) {
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
         this.isOpen = isOpen;
+        this.imageUrl = imageUrl;
         this.categories = categories;
     }
 }

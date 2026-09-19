@@ -5,6 +5,7 @@ import com.ashraf.restaurant.onboarding.enums.RestaurantOnboardingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,4 +23,6 @@ public interface RestaurantOnboardingApplicationRepository
     List<RestaurantOnboardingApplication> findAllByOrderByIdDesc();
 
     Optional<RestaurantOnboardingApplication> findFirstByUser_IdOrderByAttemptNumberDesc(Long userId);
+
+    boolean existsByUser_IdAndStatusIn(Long userId, Collection<RestaurantOnboardingStatus> statuses);
 }

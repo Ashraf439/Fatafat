@@ -31,6 +31,7 @@ public class RestaurantOnboardingApplication {
 
     // --- restaurant basic details ---
     private String restaurantName;
+    private String ownerName;
     private String addressLine;
     private String city;
     private String state;
@@ -58,7 +59,8 @@ public class RestaurantOnboardingApplication {
     private User reviewedByAdmin;
 
     @ElementCollection
-    @CollectionTable(name = "restaurant_onboarding_application_timings", joinColumns = @JoinColumn(name = "application_id"))
+    @CollectionTable(name = "restaurant_onboarding_application_timings",
+            joinColumns = @JoinColumn(name = "application_id"))
     private List<TimingSlotEmbeddable> timings = new ArrayList<>();
 
     private LocalDateTime reviewedAt;
@@ -68,5 +70,4 @@ public class RestaurantOnboardingApplication {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
 }

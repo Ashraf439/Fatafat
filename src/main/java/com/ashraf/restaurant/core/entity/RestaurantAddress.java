@@ -41,7 +41,6 @@ public class RestaurantAddress {
 
     private Boolean isDefault = false;
 
-    // In AddressNormalized:
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;

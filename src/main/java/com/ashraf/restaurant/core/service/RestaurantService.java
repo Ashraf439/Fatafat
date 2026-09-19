@@ -3,6 +3,7 @@ package com.ashraf.restaurant.core.service;
 import com.ashraf.core.entity.User;
 import com.ashraf.restaurant.core.dto.RestaurantSummaryResponse;
 import com.ashraf.restaurant.core.entity.Restaurant;
+import com.ashraf.restaurant.core.entity.RestaurantAddress;
 import com.ashraf.restaurant.core.repository.RestaurantRepository;
 import com.ashraf.shared.storage.ImageStorageService;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,8 @@ public class RestaurantService {
 
         String oldPublicId = restaurant.getImagePublicId();
 
-        ImageStorageService.UploadedImage uploaded = imageStorageService.upload(file, "restaurants/" + restaurantId);
+        ImageStorageService.UploadedImage uploaded =
+                imageStorageService.upload(file, "restaurants/" + restaurantId);
         restaurant.setImageUrl(uploaded.url());
         restaurant.setImagePublicId(uploaded.publicId());
         restaurantRepository.save(restaurant);
@@ -46,6 +48,7 @@ public class RestaurantService {
         return uploaded.url();
     }
 
+    @Transactional(readOnly = true)
     public boolean getStatus(User user) {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(user);
         return restaurantRepository.findById(restaurantId)
@@ -63,10 +66,30 @@ public class RestaurantService {
         return restaurant.getIsOpen();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<RestaurantSummaryResponse> getRestaurantsForCustomer() {
-        List<Restaurant> restaurant = restaurantRepository.findAll();
+        return restaurantRepository.findAll().stream()
+                .map(r -> {
+                    RestaurantAddress address = pickAddress(r);
+                    return new RestaurantSummaryResponse(
+                            r.getId(),
+                            r.getName(),
+                            r.getIsOpen(),
+                            address != null ? address.getStreet() : null,
+                            address != null ? address.getCity() : null,
+                            r.getImageUrl());
+                })
+                .toList();
+    }
 
-        return  restaurant.stream().map(r -> new RestaurantSummaryResponse(r.getId(),r.getName(), r.getIsOpen(),r.getAddresses().isEmpty() ? null : r.getAddresses().getFirst().getCity(), r.getImageUrl())).toList();
+    private RestaurantAddress pickAddress(Restaurant r) {
+        List<RestaurantAddress> addresses = r.getAddresses();
+        if (addresses.isEmpty()) {
+            return null;
+        }
+        return addresses.stream()
+                .filter(a -> Boolean.TRUE.equals(a.getIsDefault()))
+                .findFirst()
+                .orElse(addresses.getFirst());
     }
 }

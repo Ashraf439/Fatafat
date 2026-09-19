@@ -8,6 +8,7 @@ import com.ashraf.auth.service.EmailService;
 import com.ashraf.auth.service.LoginResult;
 import com.ashraf.auth.service.RefreshTokenResult;
 import com.ashraf.auth.service.RefreshTokenService;
+import com.ashraf.auth.spi.AccountNameResolver;
 import com.ashraf.core.entity.User;
 import com.ashraf.customer.dto.CustomerRegisterRequest;
 import com.ashraf.customer.security.CustomUserDetails;
@@ -33,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -53,13 +55,16 @@ public class AuthController {
     private final EmailService emailService;
     private final RestaurantAuthService restaurantAuthService;
     private final RefreshTokenService refreshTokenService;
+    private final List<AccountNameResolver> accountNameResolvers;
 
     public AuthController(AuthService authService, EmailService emailService,
-                          RestaurantAuthService restaurantAuthService, RefreshTokenService refreshTokenService) {
+                          RestaurantAuthService restaurantAuthService, RefreshTokenService refreshTokenService,
+                          List<AccountNameResolver> accountNameResolvers) {
         this.authService = authService;
         this.emailService = emailService;
         this.restaurantAuthService = restaurantAuthService;
         this.refreshTokenService = refreshTokenService;
+        this.accountNameResolvers = accountNameResolvers;
     }
 
     @PostMapping("register/customer")
@@ -88,18 +93,7 @@ public class AuthController {
         LoginResult result = authService.login(req);
         User user = result.user();
 
-        List<String> roles = user.getUserRoles().stream()
-                .map(userRole -> userRole.getRole().getName())
-                .toList();
-
-        LoginResponse.Account account = new LoginResponse.Account(
-                user.getId(),
-                user.getEmail(),
-                user.getPhoneNumber(),
-                user.getStatus().name(),
-                roles,
-                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
-        );
+        LoginResponse.Account account = buildAccount(user);
 
         long expiresAt = jwtExpirationMs / 1000;
 
@@ -144,18 +138,39 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<LoginResponse.Account> me(@AuthenticationPrincipal CustomUserDetails principal) {
-        User user = principal.getUser();
+        return ResponseEntity.ok(buildAccount(principal.getUser()));
+    }
+
+    /**
+     * Builds the account payload returned by both /login and /me. Only generic User
+     * columns plus a resolved display name - nothing role-specific lives here.
+     * "Name" is delegated to whichever registered AccountNameResolver applies to this
+     * user; each role/domain module owns its own resolver (see com.ashraf.auth.spi).
+     * Restaurant-specific data (id, name, onboarding status, address, image, ...)
+     * belongs on GET /api/restaurant/profile, not here - it's read fresh from the DB
+     * by the restaurant module whenever the frontend actually needs it, instead of
+     * being snapshotted into every login/refresh response.
+     */
+    private LoginResponse.Account buildAccount(User user) {
         List<String> roles = user.getUserRoles().stream()
                 .map(ur -> ur.getRole().getName())
                 .toList();
-        return ResponseEntity.ok(new LoginResponse.Account(
+
+        String name = accountNameResolvers.stream()
+                .map(resolver -> resolver.resolveName(user))
+                .flatMap(Optional::stream)
+                .findFirst()
+                .orElse(null);
+
+        return new LoginResponse.Account(
                 user.getId(),
+                name,
                 user.getEmail(),
                 user.getPhoneNumber(),
                 user.getStatus().name(),
                 roles,
                 user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
-        ));
+        );
     }
 
     @PostMapping("resend-verification")
