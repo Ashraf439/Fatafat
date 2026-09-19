@@ -1,11 +1,14 @@
 package com.ashraf.auth.controller;
 
+import com.ashraf.auth.dto.ForgotPasswordRequest;
 import com.ashraf.auth.dto.LoginRequest;
 import com.ashraf.auth.dto.LoginResponse;
 import com.ashraf.auth.dto.ResendVerificationRequest;
+import com.ashraf.auth.dto.SetPasswordRequest;
 import com.ashraf.auth.service.AuthService;
 import com.ashraf.auth.service.EmailService;
 import com.ashraf.auth.service.LoginResult;
+import com.ashraf.auth.service.PasswordService;
 import com.ashraf.auth.service.RefreshTokenResult;
 import com.ashraf.auth.service.RefreshTokenService;
 import com.ashraf.auth.spi.AccountNameResolver;
@@ -56,15 +59,17 @@ public class AuthController {
     private final RestaurantAuthService restaurantAuthService;
     private final RefreshTokenService refreshTokenService;
     private final List<AccountNameResolver> accountNameResolvers;
+    private final PasswordService passwordService;
 
     public AuthController(AuthService authService, EmailService emailService,
                           RestaurantAuthService restaurantAuthService, RefreshTokenService refreshTokenService,
-                          List<AccountNameResolver> accountNameResolvers) {
+                          List<AccountNameResolver> accountNameResolvers, PasswordService passwordService) {
         this.authService = authService;
         this.emailService = emailService;
         this.restaurantAuthService = restaurantAuthService;
         this.refreshTokenService = refreshTokenService;
         this.accountNameResolvers = accountNameResolvers;
+        this.passwordService = passwordService;
     }
 
     @PostMapping("register/customer")
@@ -180,6 +185,24 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
                 "message", "If that email is registered and not yet verified, a new verification link has been sent."
         ));
+    }
+
+    /** Sends a reset link. Always answers the same way so it cannot be used to probe which emails exist. */
+    @PostMapping("forgot-password")
+    @RateLimit(limit = 3, timeWindow = 300, key = "#req.email")
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        passwordService.requestReset(req.getEmail());
+        return ResponseEntity.ok(Map.of(
+                "message", "If that email is registered, a password reset link has been sent."
+        ));
+    }
+
+    /** Completes both the staff-invite and forgot-password flows using the token from the emailed link. */
+    @PostMapping("set-password")
+    @RateLimit(limit = 10, timeWindow = 300)
+    public ResponseEntity<Map<String, String>> setPassword(@Valid @RequestBody SetPasswordRequest req) {
+        passwordService.setPassword(req.getToken(), req.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Password set. You can now log in."));
     }
 
     @GetMapping("/verify")

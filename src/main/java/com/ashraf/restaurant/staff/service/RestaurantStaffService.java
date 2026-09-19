@@ -1,6 +1,6 @@
 package com.ashraf.restaurant.staff.service;
 
-import com.ashraf.auth.service.EmailService;
+import com.ashraf.auth.service.PasswordService;
 import com.ashraf.core.entity.*;
 import com.ashraf.core.enums.PermissionEffect;
 import com.ashraf.core.enums.Status;
@@ -37,8 +37,7 @@ public class RestaurantStaffService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantAccessService restaurantAccessService;
     private final PasswordEncoder passwordEncoder;
-    private final TokenRepository tokenRepository;
-    private final EmailService emailService;
+    private final PasswordService passwordService;
     private final PermissionRepository permissionRepository;
 
     public RestaurantStaffService(UserRepository userRepository,
@@ -49,8 +48,7 @@ public class RestaurantStaffService {
                                   RestaurantRepository restaurantRepository,
                                   RestaurantAccessService restaurantAccessService,
                                   PasswordEncoder passwordEncoder,
-                                  TokenRepository tokenRepository,
-                                  EmailService emailService,
+                                  PasswordService passwordService,
                                   PermissionRepository permissionRepository) {
         this.userRepository = userRepository;
         this.rolesRepository = rolesRepository;
@@ -60,8 +58,7 @@ public class RestaurantStaffService {
         this.restaurantRepository = restaurantRepository;
         this.restaurantAccessService = restaurantAccessService;
         this.passwordEncoder = passwordEncoder;
-        this.tokenRepository = tokenRepository;
-        this.emailService = emailService;
+        this.passwordService = passwordService;
         this.permissionRepository = permissionRepository;
     }
 
@@ -98,9 +95,8 @@ public class RestaurantStaffService {
         restaurantStaff.setStatus(StaffStatus.ACTIVE);
         restaurantStaffRepository.save(restaurantStaff);
 
-        String token = UUID.randomUUID().toString();
-        tokenRepository.save(new VerificationToken(token, user));
-        emailService.sendVerificationEmail(user.getEmail(), token);
+        // Staff have no usable password yet: email them a link to set their own (activates the account).
+        passwordService.sendStaffInvite(user, restaurant.getName());
     }
 
     @Transactional

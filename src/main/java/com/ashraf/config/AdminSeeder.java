@@ -8,6 +8,7 @@ import com.ashraf.shared.exception.RoleNotFoundException;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@Order(1) // must run before DemoDataSeeder (@Order(10))
 public class AdminSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -67,11 +69,11 @@ public class AdminSeeder implements CommandLineRunner {
     private void seedRolePermissions() throws RoleNotFoundException {
         Map<String,List<String>> mapRolePermissions = new HashMap<>();
         mapRolePermissions.put("CUSTOMER", List.of("RATING_ADD", "COMPLAINT_ADD"));
-        mapRolePermissions.put("RESTAURANT",List.of("MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL","STAFF_ADD","STAFF_REMOVE","STAFF_MANAGE_PERMISSIONS"));
+        mapRolePermissions.put("RESTAURANT",List.of("MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL","STAFF_ADD","STAFF_REMOVE","STAFF_MANAGE_PERMISSIONS", "RESTAURANT_EDIT"));
         mapRolePermissions.put("RIDER",List.of( "DELIVERY_ACCEPT", "DELIVERY_CANCEL"));
         mapRolePermissions.put("ADMIN",List.of("RESTAURANT_APPROVE", "RIDER_APPROVE","RESTAURANT_REMOVE","RIDER_REMOVE"));
         mapRolePermissions.put("SUPER_ADMIN",List.of("ROLE_ASSIGN", "ADMIN_ADD","ADMIN_REMOVE"));
-        mapRolePermissions.put("RESTAURANT_MANAGER", List.of("MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL", "STAFF_ADD"));
+        mapRolePermissions.put("RESTAURANT_MANAGER", List.of("MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL", "STAFF_ADD", "RESTAURANT_EDIT"));
         mapRolePermissions.put("RESTAURANT_STAFF", List.of("ORDER_ACCEPT", "ORDER_CANCEL"));
         mapRolePermissions.put("RESTAURANT_CASHIER",List.of("ORDER_ACCEPT"));
         for(Map.Entry<String, List<String>> entry: mapRolePermissions.entrySet()) {
@@ -96,7 +98,7 @@ public class AdminSeeder implements CommandLineRunner {
         List<String> permissions = List.of("RATING_ADD", "COMPLAINT_ADD", "DELIVERY_ACCEPT", "DELIVERY_CANCEL",
                 "MENU_ITEM_ADD", "MENU_ITEM_REMOVE", "ORDER_ACCEPT", "ORDER_CANCEL",
                 "RESTAURANT_APPROVE", "RIDER_APPROVE","RESTAURANT_REMOVE","RIDER_REMOVE", "ROLE_ASSIGN", "ADMIN_ADD","ADMIN_REMOVE",
-                "STAFF_ADD", "STAFF_REMOVE", "STAFF_MANAGE_PERMISSIONS");
+                "STAFF_ADD", "STAFF_REMOVE", "STAFF_MANAGE_PERMISSIONS", "RESTAURANT_EDIT");
         for(String permission:permissions) {
             if(!permissionRepository.existsByName(permission)) {
                 Permissions p = new Permissions();

@@ -1,0 +1,188 @@
+# name|wikipediaTitle|description|priceInr|foodType|category|prepMinutes|meals(B/L/D)|cuisineTags
+# Every wikipediaTitle below was checked to resolve to a real photo of the dish.
+# ---------------- South Indian / Andhra tiffins ----------------
+Idli (2 pcs)|Idli|Steamed rice and urad dal cakes served with sambar and coconut chutney|50|VEG|Tiffins|8|BD|SI,KER,AND
+Medu Vada (2 pcs)|Medu vada|Crisp lentil doughnuts served with sambar and chutney|60|VEG|Tiffins|10|BD|SI,KER
+Plain Dosa|Dosa (food)|Thin crisp rice and lentil crepe with sambar and chutneys|60|VEG|Tiffins|10|BD|SI,AND
+Masala Dosa|Masala dosa|Crisp dosa filled with spiced potato masala|90|VEG|Tiffins|12|BLD|SI,AND,KER
+Neer Dosa (3 pcs)|Neer dosa|Soft lacy rice crepes served with coconut chutney|80|VEG|Tiffins|10|BD|SI,KER
+Onion Uttapam|Uttapam|Thick rice pancake topped with onion tomato and green chilli|85|VEG|Tiffins|12|BD|SI
+Pesarattu|Pesarattu|Andhra green gram crepe served with ginger chutney|80|VEG|Tiffins|12|B|SI,AND
+Upma|Upma|Semolina cooked with mustard seeds curry leaves and cashew|50|VEG|Tiffins|8|B|SI,AND
+Ven Pongal|Pongal (dish)|Rice and moong dal cooked with pepper cumin and ghee|70|VEG|Tiffins|10|B|SI
+Poori Masala (2 pcs)|Puri (food)|Puffed fried bread served with potato masala|70|VEG|Tiffins|12|BL|SI,NI
+Bisi Bele Bath|Bisi bele bath|Karnataka style spicy lentil rice with vegetables and ghee|110|VEG|Rice|12|BL|SI
+Kesari Bath|Kesari bath|Sweet semolina pudding with ghee cashew and saffron|50|VEG|Desserts|8|B|SI
+Punugulu (6 pcs)|Punugulu|Andhra fried idli batter fritters with peanut chutney|60|VEG|Snacks|10|BD|SI,AND,STR
+Mirchi Bajji (4 pcs)|Bhaji|Stuffed green chilli fritters in gram flour batter|60|VEG|Snacks|10|LD|SI,AND,STR
+Filter Coffee|Indian filter coffee|Strong South Indian decoction coffee with frothy milk|40|VEG|Beverages|4|BLD|SI,KER,AND
+Masala Chai|Masala chai|Spiced milk tea brewed with ginger and cardamom|25|VEG|Beverages|4|BLD|SI,NI,STR,BAK,BIR
+Spiced Buttermilk|Buttermilk|Chilled salted buttermilk with curry leaves and ginger|30|VEG|Beverages|3|LD|SI,AND,KER
+Pulihora|Pulihora|Tangy tamarind rice tempered with peanuts and curry leaves|90|VEG|Rice|8|L|SI,AND
+Lemon Rice|Lemon rice|Turmeric rice with lemon peanuts and curry leaves|80|VEG|Rice|8|L|SI
+Curd Rice|Curd rice|Cooling rice and yoghurt tempered with mustard and chilli|80|VEG|Rice|6|LD|SI,AND,KER
+Full Meals (Veg Thali)|Thali|Rice sambar rasam dal two curries pickle curd and a sweet|190|VEG|Meals|15|LD|SI,AND,KER
+Payasam|Kheer|Creamy milk pudding with vermicelli and dry fruits|70|VEG|Desserts|5|LD|SI,AND,KER
+Bobbatlu (Puran Poli)|Puran poli|Sweet flatbread stuffed with jaggery and chana dal|70|VEG|Desserts|10|LD|SI,AND
+Mysore Pak|Mysore pak|Ghee rich gram flour fudge|60|VEG|Desserts|4|BLD|SI
+Motichoor Laddu (2 pcs)|Laddu|Fine gram flour pearls sweetened and shaped into balls|60|VEG|Desserts|4|BLD|SI,NI,STR
+Ragi Mudde with Curry|Ragi mudde|Finger millet balls served with spicy dal|130|VEG|Meals|15|L|SI,AND
+Idiyappam (3 pcs)|Idiyappam|Steamed rice noodle cakes served with curry|80|VEG|Tiffins|12|BD|SI,KER
+Appam (2 pcs)|Appam|Lacy fermented rice pancakes served with vegetable stew|90|VEG|Tiffins|15|BD|KER,SI
+Puttu with Kadala Curry|Puttu|Steamed rice and coconut cylinders with black chickpea curry|100|VEG|Tiffins|15|B|KER,SI
+# ---------------- Kerala ----------------
+Kerala Sadya Meals|Sadya|Traditional feast on banana leaf with rice curries thoran and payasam|250|VEG|Meals|20|L|KER
+Avial|Avial|Mixed vegetables in coconut and curd gravy|140|VEG|Main Course|15|LD|KER
+Cabbage Thoran|Thoran|Stir fried vegetables with grated coconut and mustard|110|VEG|Sides|10|LD|KER
+Unniyappam (4 pcs)|Unni appam|Sweet rice and jaggery fritters with banana|70|VEG|Desserts|10|BLD|KER
+Banana Chips|Banana chips|Crisp fried raw banana chips|60|VEG|Snacks|3|BLD|KER
+Pazham Pori (2 pcs)|Banana fritter|Ripe banana fritters fried in batter|50|VEG|Snacks|8|LD|KER
+Kerala Parotta (2 pcs)|Paratha|Flaky layered flatbread|60|VEG|Breads|10|LD|KER
+# ---------------- Andhra / Hyderabadi / biryani house ----------------
+Hyderabadi Chicken Dum Biryani|Hyderabadi biryani|Basmati layered with marinated chicken and slow cooked on dum|280|NON_VEG|Biryani|25|LD|BIR,AND
+Mutton Dum Biryani|Biryani|Tender mutton layered with saffron basmati and sealed on dum|380|NON_VEG|Biryani|30|LD|BIR,AND
+Kolkata Mutton Biryani|Kolkata biryani|Aromatic biryani with potato and slow cooked mutton|360|NON_VEG|Biryani|30|LD|BIR
+Hyderabadi Haleem|Haleem|Slow cooked wheat lentil and mutton stew|240|NON_VEG|Starters|20|LD|BIR,AND
+Chicken Lollipop (6 pcs)|Chicken lollipop|Crisp fried chicken winglets tossed in spicy sauce|240|NON_VEG|Starters|18|LD|BIR,AND,CHI
+Chicken Tikka|Chicken tikka|Boneless chicken marinated in yoghurt and spices grilled in tandoor|260|NON_VEG|Starters|20|LD|BIR,NI
+Tandoori Chicken (Half)|Tandoori chicken|Chicken marinated overnight and roasted in clay oven|300|NON_VEG|Starters|25|LD|BIR,NI
+Seekh Kebab|Seekh kebab|Minced meat skewers grilled with herbs and spices|250|NON_VEG|Starters|20|LD|BIR,NI
+Shami Kebab (4 pcs)|Shami kebab|Soft minced mutton and chana dal patties pan seared|240|NON_VEG|Starters|18|LD|BIR
+Galouti Kebab (4 pcs)|Tunde ke kabab|Melt in mouth Lucknowi minced mutton kebabs|280|NON_VEG|Starters|20|D|BIR
+Mirchi ka Salan|Mirchi ka salan|Tangy peanut and sesame gravy with green chillies|90|VEG|Sides|10|LD|BIR,AND
+Boondi Raita|Raita|Chilled curd with cucumber onion and roasted cumin|50|VEG|Sides|3|LD|BIR,NI,AND
+Double ka Meetha|Double ka meetha|Fried bread pudding soaked in saffron milk and rabdi|90|VEG|Desserts|8|LD|BIR,AND
+Qubani ka Meetha|Khubani ka meetha|Hyderabadi stewed apricot dessert with cream|110|VEG|Desserts|5|LD|BIR,AND
+Phirni|Phirni|Ground rice pudding set in clay bowls|80|VEG|Desserts|5|LD|BIR,NI
+Osmania Biscuits (6 pcs)|Osmania biscuit|Salty sweet Hyderabadi tea biscuits|40|VEG|Snacks|3|BLD|BIR,BAK
+Mutton Curry|Mutton curry|Slow cooked mutton in onion tomato masala|340|NON_VEG|Main Course|30|LD|AND,BIR,NI,KER
+Baingan Bharta|Baingan bharta|Smoky roasted aubergine mash with onion and tomato|160|VEG|Main Course|18|LD|AND,NI
+Chapati (2 pcs)|Chapati|Soft whole wheat flatbread|40|VEG|Breads|6|LD|AND,NI,SI
+# ---------------- North Indian ----------------
+Butter Chicken|Butter chicken|Tandoori chicken in creamy tomato butter gravy|320|NON_VEG|Main Course|25|LD|NI
+Chicken Tikka Masala|Chicken tikka masala|Grilled chicken tikka in spiced onion tomato gravy|330|NON_VEG|Main Course|25|LD|NI
+Rogan Josh|Rogan josh|Kashmiri style mutton curry with aromatic spices|380|NON_VEG|Main Course|35|LD|NI
+Paneer Tikka|Paneer tikka|Cottage cheese cubes marinated and grilled in tandoor|240|VEG|Starters|20|LD|NI
+Palak Paneer|Palak paneer|Paneer cubes in smooth spinach gravy|240|VEG|Main Course|20|LD|NI
+Shahi Paneer|Shahi paneer|Paneer in rich cashew tomato cream gravy|260|VEG|Main Course|20|LD|NI
+Dal Makhani|Dal makhani|Black lentils slow cooked overnight with butter and cream|210|VEG|Main Course|20|LD|NI
+Chana Masala|Chana masala|Chickpeas simmered in tangy onion tomato masala|170|VEG|Main Course|18|LD|NI
+Rajma Masala|Rajma|Kidney beans in thick tomato gravy|180|VEG|Main Course|18|LD|NI
+Aloo Gobi|Aloo gobhi|Potato and cauliflower dry curry with cumin|170|VEG|Main Course|15|LD|NI
+Kadhi Pakora|Kadhi|Yoghurt gravy with gram flour fritters|170|VEG|Main Course|18|L|NI
+Butter Naan|Naan|Soft leavened bread baked in tandoor and brushed with butter|45|VEG|Breads|8|LD|NI,BIR
+Tandoori Roti|Roti|Whole wheat bread baked in clay oven|30|VEG|Breads|6|LD|NI,BIR
+Aloo Paratha with Curd|Paratha|Stuffed flatbread served with curd and pickle|110|VEG|Breakfast|12|BL|NI
+Chole Bhature|Chole bhature|Fluffy fried bread served with spicy chickpea curry|130|VEG|Breakfast|20|BL|NI,STR
+Jeera Rice|Jeera bhaat|Basmati rice tempered with cumin|110|VEG|Rice|10|LD|NI,BIR
+Dal Khichdi|Khichdi|Comforting rice and lentil porridge with ghee|150|VEG|Rice|15|LD|NI
+Samosa (2 pcs)|Samosa|Crisp pastry stuffed with spiced potato and peas|40|VEG|Snacks|6|BLD|NI,STR,BAK
+Sweet Lassi|Lassi|Thick chilled sweet yoghurt drink|70|VEG|Beverages|4|BLD|NI,STR,BIR
+Gulab Jamun (2 pcs)|Gulab jamun|Soft milk dumplings soaked in rose cardamom syrup|70|VEG|Desserts|5|LD|NI,BIR,STR
+Ras Malai (2 pcs)|Ras malai|Soft cheese discs in saffron milk|100|VEG|Desserts|5|LD|NI,BIR
+Kulfi|Kulfi|Dense frozen milk dessert with pistachio|80|VEG|Desserts|4|LD|NI,STR,BIR
+Gajar ka Halwa|Gajar ka halwa|Slow cooked carrot pudding with khoya and nuts|100|VEG|Desserts|6|LD|NI
+Moong Dal Halwa|Moong dal halwa|Rich ghee laden moong dal pudding|110|VEG|Desserts|6|LD|NI
+Rasgulla (2 pcs)|Rasgulla|Spongy cottage cheese balls in light sugar syrup|70|VEG|Desserts|4|LD|NI,STR
+Mixed Pakora Platter|Pakora|Assorted onion and vegetable fritters|110|VEG|Snacks|12|LD|NI,STR
+Bread Pakora|Bread pakora|Bread slices stuffed with potato and fried in gram flour|50|VEG|Snacks|8|BLD|NI,STR
+# ---------------- Indo-Chinese ----------------
+Chicken Manchurian|Manchurian (dish)|Fried chicken tossed in soy garlic and chilli sauce|220|NON_VEG|Starters|18|LD|CHI
+Chilli Chicken|Chilli chicken|Crispy chicken wok tossed with capsicum and green chilli|230|NON_VEG|Starters|18|LD|CHI
+Chicken Fried Rice|Fried rice|Wok fried rice with chicken egg and spring onion|190|NON_VEG|Rice and Noodles|15|LD|CHI
+Veg Hakka Noodles|Chow mein|Stir fried noodles with crunchy vegetables|160|VEG|Rice and Noodles|15|LD|CHI
+Veg Spring Rolls (6 pcs)|Spring roll|Crisp rolls stuffed with cabbage carrot and noodles|150|VEG|Starters|15|LD|CHI
+Veg Momos (8 pcs)|Momo (food)|Steamed dumplings with vegetable filling and red chilli chutney|120|VEG|Starters|15|LD|CHI,STR
+Hot and Sour Soup|Hot and sour soup|Peppery tangy soup with vegetables|110|VEG|Soups|10|LD|CHI
+Egg Drop Soup|Egg drop soup|Silky egg ribbons in seasoned broth|120|EGG|Soups|10|LD|CHI
+Veg Thukpa|Thukpa|Tibetan style noodle soup with vegetables|160|VEG|Soups|12|LD|CHI
+Tomato Soup|Tomato soup|Creamy roast tomato soup with croutons|100|VEG|Soups|8|LD|CHI,ITA,NI,FF
+Chicken Dim Sum (6 pcs)|Dim sum|Steamed chicken dumplings with ginger soy dip|200|NON_VEG|Starters|15|LD|CHI
+Chicken Wonton (6 pcs)|Wonton|Delicate chicken filled wontons in chilli oil|180|NON_VEG|Starters|15|LD|CHI
+Kung Pao Chicken|Kung Pao chicken|Stir fried chicken with peanuts and dried chillies|280|NON_VEG|Main Course|20|LD|CHI
+Vanilla Ice Cream|Ice cream|Two scoops of classic vanilla ice cream|90|VEG|Desserts|3|LD|CHI,FF,ITA,STR
+# ---------------- Street food and chaat ----------------
+Pani Puri (6 pcs)|Panipuri|Crisp puris with spiced mint water and chickpeas|50|VEG|Chaat|8|LD|STR
+Sev Puri|Sev puri|Flat puris topped with potato chutneys and sev|60|VEG|Chaat|8|LD|STR
+Dahi Puri|Chaat|Crisp puris filled with potato curd and sweet chutney|70|VEG|Chaat|8|LD|STR
+Bhel Puri|Bhel puri|Puffed rice tossed with tamarind chutney onion and sev|60|VEG|Chaat|8|LD|STR
+Papdi Chaat|Papri chat|Crisp wafers with potato yoghurt and chutneys|80|VEG|Chaat|8|LD|STR
+Ragda Pattice|Ragda pattice|Potato patties topped with white pea curry|90|VEG|Chaat|12|LD|STR
+Dahi Vada|Dahi vada|Soft lentil dumplings in whisked curd with chutneys|80|VEG|Chaat|8|LD|STR
+Vada Pav|Vada pav|Mumbai style potato fritter in a bun with garlic chutney|40|VEG|Snacks|8|BLD|STR
+Pav Bhaji|Pav bhaji|Spiced mashed vegetables served with buttered pav|130|VEG|Snacks|15|LD|STR
+Raj Kachori|Kachori|Giant crisp kachori topped with curd and chutneys|90|VEG|Chaat|12|LD|STR
+Aloo Tikki Chaat|Aloo tikki|Crisp potato patties with chutneys|70|VEG|Chaat|10|LD|STR
+Dhokla|Dhokla|Steamed fermented gram flour cake with green chutney|70|VEG|Snacks|8|BLD|STR
+Surati Khaman|Khaman|Soft steamed gram flour cake with tempering|70|VEG|Snacks|8|BLD|STR
+Murukku|Murukku|Crunchy rice flour spirals|50|VEG|Snacks|3|LD|STR,SI
+Rose Falooda|Falooda|Rose syrup vermicelli basil seeds and ice cream|130|VEG|Desserts|6|LD|STR,BIR
+Sugarcane Juice|Sugarcane juice|Freshly pressed sugarcane juice with ginger and lemon|40|VEG|Beverages|3|LD|STR
+Ice Gola|Shaved ice|Shaved ice with flavoured syrups|40|VEG|Desserts|3|LD|STR
+Fresh Lemonade|Lemonade|Chilled lemonade with mint|50|VEG|Beverages|3|LD|STR,FF,BAK
+# ---------------- Bakery and cafe ----------------
+Butter Croissant|Croissant|Flaky buttery French pastry|90|VEG|Bakery|5|B|BAK
+Pancakes with Honey|Pancake|Fluffy pancake stack with honey and butter|160|VEG|Breakfast|12|B|BAK
+Belgian Waffle|Waffle|Crisp waffle with strawberries and cream|180|VEG|Breakfast|12|BLD|BAK
+French Toast|French toast|Egg soaked toast pan seared with maple syrup|150|EGG|Breakfast|10|B|BAK
+Cheese Omelette|Omelette|Three egg omelette with onion tomato and cheese|120|EGG|Breakfast|10|BL|BAK
+Scrambled Eggs on Toast|Scrambled eggs|Soft scrambled eggs with buttered toast|130|EGG|Breakfast|8|B|BAK
+Eggs Benedict|Eggs Benedict|Poached eggs on toasted muffin with hollandaise|240|EGG|Breakfast|15|B|BAK
+English Breakfast Platter|Full breakfast|Eggs sausages beans toast and grilled tomato|320|NON_VEG|Breakfast|20|B|BAK
+Avocado Toast|Avocado toast|Sourdough topped with smashed avocado and chilli flakes|220|VEG|Breakfast|10|B|BAK
+Bagel with Cream Cheese|Bagel|Toasted sesame bagel with cream cheese|150|VEG|Bakery|8|B|BAK
+Blueberry Muffin|Muffin|Moist muffin studded with blueberries|90|VEG|Bakery|3|B|BAK
+Glazed Doughnut|Doughnut|Soft yeast doughnut with sugar glaze|70|VEG|Bakery|3|BLD|BAK
+Granola Yoghurt Bowl|Granola|Greek yoghurt with granola honey and fruit|170|VEG|Breakfast|6|B|BAK
+Oatmeal Porridge|Oatmeal|Warm oats with banana and cinnamon|120|VEG|Breakfast|8|B|BAK
+Fresh Fruit Salad|Fruit salad|Seasonal fruit with honey lime dressing|120|VEG|Healthy|5|BL|BAK
+Kiwi Smoothie|Smoothie|Blended kiwi banana and yoghurt|130|VEG|Beverages|5|BLD|BAK
+Cappuccino|Cappuccino|Espresso with steamed milk foam|130|VEG|Beverages|5|BLD|BAK,ITA
+Caffe Latte|Latte|Smooth espresso with steamed milk|140|VEG|Beverages|5|BLD|BAK
+Double Espresso|Espresso|Double shot of rich espresso|90|VEG|Beverages|3|BLD|BAK,ITA
+Strawberry Milkshake|Milkshake|Thick milkshake with strawberry|150|VEG|Beverages|5|LD|BAK,FF
+Chicken Club Sandwich|Club sandwich|Triple decker with chicken lettuce and tomato|220|NON_VEG|Sandwiches|12|BLD|BAK,FF
+Grilled Cheese Sandwich|Grilled cheese|Golden toasted sandwich with melted cheese|150|VEG|Sandwiches|10|BLD|BAK,FF
+Walnut Brownie|Chocolate brownie|Fudgy brownie with walnuts|110|VEG|Desserts|4|BLD|BAK,FF
+Baked Cheesecake|Cheesecake|Creamy baked cheesecake with berry compote|180|VEG|Desserts|5|LD|BAK,ITA
+Chocolate Fudge Cake|Chocolate cake|Rich layered chocolate fudge slice|160|VEG|Desserts|5|BLD|BAK
+Red Velvet Cake|Red velvet cake|Red velvet slice with cream cheese frosting|170|VEG|Desserts|5|LD|BAK
+Vanilla Cupcake|Cupcake|Vanilla cupcake with buttercream|80|VEG|Bakery|3|BLD|BAK
+Strawberry Sundae|Sundae|Ice cream sundae with strawberry sauce|140|VEG|Desserts|4|LD|BAK,FF
+# ---------------- Fast food ----------------
+Classic Cheeseburger|Cheeseburger|Grilled patty with cheddar lettuce and pickles|190|NON_VEG|Burgers|12|LD|FF
+Crispy Chicken Burger|Hamburger|Crumb fried chicken fillet with lettuce and mayo|200|NON_VEG|Burgers|12|LD|FF
+Veggie Burger|Veggie burger|Plant patty with mayo lettuce and tomato|150|VEG|Burgers|12|LD|FF
+Salted French Fries|French fries|Golden salted fries|100|VEG|Sides|8|LD|FF
+Onion Rings|Onion ring|Crisp battered onion rings|110|VEG|Sides|8|LD|FF
+Fried Chicken (4 pcs)|Fried chicken|Crispy spiced fried chicken pieces|280|NON_VEG|Chicken|20|LD|FF
+Chicken Nuggets (8 pcs)|Chicken nugget|Golden crumb coated chicken nuggets|190|NON_VEG|Chicken|12|LD|FF
+Buffalo Wings (6 pcs)|Buffalo wing|Hot buffalo style wings with dip|260|NON_VEG|Chicken|18|LD|FF
+Grilled Hot Dog|Hot dog|Grilled sausage in a soft bun with mustard|160|NON_VEG|Snacks|10|LD|FF
+Margherita Pizza|Pizza Margherita|Tomato mozzarella and basil on thin crust|260|VEG|Pizza|20|LD|FF,ITA
+Chicken Pepperoni Pizza|Pepperoni|Loaded with chicken pepperoni and mozzarella|340|NON_VEG|Pizza|20|LD|FF,ITA
+Grilled Chicken Wrap|Wrap (food)|Grilled chicken with greens in a soft tortilla|200|NON_VEG|Wraps|12|LD|FF
+Loaded Nachos|Nachos|Tortilla chips with cheese salsa and jalapenos|180|VEG|Snacks|10|LD|FF
+Street Tacos (3 pcs)|Taco|Soft tacos with spiced filling salsa and onion|240|NON_VEG|Mexican|15|LD|FF
+Chicken Burrito|Burrito|Tortilla wrap with rice beans chicken and salsa|250|NON_VEG|Mexican|15|LD|FF
+Crispy Fish Fingers|Fish finger|Crumb coated fish fingers with tartar dip|240|NON_VEG|Snacks|15|LD|FF
+# ---------------- Italian ----------------
+Bruschetta|Bruschetta|Grilled bread topped with tomato basil and olive oil|180|VEG|Starters|10|LD|ITA
+Garlic Bread|Garlic bread|Toasted baguette with garlic butter and herbs|140|VEG|Starters|8|LD|ITA
+Focaccia|Focaccia|Rosemary and olive oil focaccia|150|VEG|Starters|8|LD|ITA
+Caprese Salad|Caprese salad|Tomato mozzarella and basil with balsamic|240|VEG|Salads|8|LD|ITA
+Chicken Caesar Salad|Caesar salad|Romaine croutons parmesan and grilled chicken|260|NON_VEG|Salads|10|LD|ITA
+Minestrone|Minestrone|Hearty Italian vegetable and bean soup|160|VEG|Soups|10|LD|ITA
+Spaghetti Aglio e Olio|Spaghetti|Spaghetti tossed in garlic chilli and olive oil|260|VEG|Pasta|15|LD|ITA
+Penne Arrabbiata|Arrabbiata sauce|Penne in spicy tomato and garlic sauce|270|VEG|Pasta|15|LD|ITA
+Fettuccine Alfredo|Fettuccine Alfredo|Fettuccine in creamy parmesan sauce|300|VEG|Pasta|15|LD|ITA
+Chicken Carbonara|Carbonara|Spaghetti in creamy egg sauce with chicken|320|NON_VEG|Pasta|18|LD|ITA
+Baked Chicken Lasagne|Lasagna|Layered pasta with chicken ragu and bechamel|340|NON_VEG|Pasta|25|LD|ITA
+Parmesan Risotto|Risotto|Creamy arborio rice finished with parmesan|320|VEG|Main Course|25|LD|ITA
+Potato Gnocchi|Gnocchi|Pillowy potato gnocchi in sage butter|310|VEG|Pasta|20|LD|ITA
+Cheese Ravioli|Ravioli|Stuffed pasta parcels in creamy sauce|330|VEG|Pasta|20|LD|ITA
+Veg Calzone|Calzone|Folded pizza stuffed with cheese and vegetables|290|VEG|Pizza|20|LD|ITA
+Tiramisu|Tiramisu|Espresso soaked ladyfingers with mascarpone|220|EGG|Desserts|5|LD|ITA
+Panna Cotta|Panna cotta|Vanilla cream pudding with berry coulis|200|VEG|Desserts|5|LD|ITA
+Cannoli|Cannoli|Crisp shells filled with sweet ricotta|180|VEG|Desserts|5|LD|ITA
+Gelato Scoops|Gelato|Two scoops of Italian gelato|150|VEG|Desserts|4|LD|ITA
