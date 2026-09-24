@@ -15,6 +15,23 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler({ResourceNotFoundException.class, RestaurantNotFoundException.class})
+    public ResponseEntity<Map<String, String>> handleNotFound(RuntimeException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity<Map<String, String>> handleBusinessRule(BusinessRuleException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    // The app's own AccessDeniedException (not Spring Security's) used by permission checks;
+    // without this it fell through to the catch-all and surfaced as a 500.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, String>> handleUserExists(UserAlreadyExistsException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);

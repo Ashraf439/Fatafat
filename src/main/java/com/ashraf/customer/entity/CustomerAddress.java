@@ -41,6 +41,10 @@ public class CustomerAddress {
 
     private Boolean isDefault = false;
 
+    // Soft delete: orders keep a foreign key to the address they were delivered to, so an
+    // address a customer "deletes" is archived instead of removed. NULL (legacy rows) = active.
+    private Boolean archived = false;
+
     // In AddressNormalized:
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")

@@ -49,6 +49,8 @@ public class AuthController {
 
     @Value("${frontend.restaurant-url:http://localhost:5173}")
     private String frontendUrl;
+    @Value("${frontend.customer-url:http://localhost:5174}")
+    private String customerFrontendUrl;
     @Value("${jwt.expiration-ms}")
     private long jwtExpirationMs;
     @Value("${cookie.secure:true}")
@@ -207,15 +209,19 @@ public class AuthController {
 
     @GetMapping("/verify")
     public ResponseEntity<Void> verifyAccount(@RequestParam("token") String token) {
+        // Work out which app the emailed link belongs to before the token is consumed.
+        String landing = authService.isCustomerToken(token)
+                ? customerFrontendUrl + "/login"
+                : frontendUrl + "/signup";
         try {
             authService.verifyEmailToken(token);
             return ResponseEntity.status(302)
-                    .location(URI.create(frontendUrl + "?verified=true"))
+                    .location(URI.create(landing + "?verified=true"))
                     .build();
         } catch (RuntimeException e) {
-            String msg = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+            String msg = URLEncoder.encode(String.valueOf(e.getMessage()), StandardCharsets.UTF_8);
             return ResponseEntity.status(302)
-                    .location(URI.create(frontendUrl + "?verified=false&error=" + msg))
+                    .location(URI.create(landing + "?verified=false&error=" + msg))
                     .build();
         }
     }

@@ -105,8 +105,12 @@ public class AuthService {
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("Email already registered");
         }
+        if (req.getPhoneNumber() != null && userRepository.existsByPhoneNumber(req.getPhoneNumber())) {
+            throw new UserAlreadyExistsException("Phone number already registered");
+        }
         User user = new User();
         user.setEmail(req.getEmail());
+        user.setPhoneNumber(req.getPhoneNumber());
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         user.setStatus(Status.PENDING_VERIFICATION);
         user = userRepository.save(user);
@@ -116,6 +120,7 @@ public class AuthService {
         Customer customer = new Customer();
         customer.setUser(user);
         customer.setName(req.getName());
+        customer.setPhoneNumber(req.getPhoneNumber());
 
         address.setCustomer(customer);  // add this — links the reverse collection
         address = customerAddressRepository.save(address);
@@ -188,7 +193,18 @@ public class AuthService {
         address.setState(req.getState());
         address.setPincode(req.getPincode());
         address.setStreet(req.getStreet());
+        address.setLandmark(req.getLandmark());
+        address.setIsDefault(true);
         return address;
+    }
+
+    /** True when the verification token belongs to a customer account (used to pick the redirect target). */
+    @Transactional
+    public boolean isCustomerToken(String token) {
+        return tokenRepository.findByToken(token)
+                .map(t -> t.getUser().getUserRoles().stream()
+                        .anyMatch(ur -> "CUSTOMER".equals(ur.getRole().getName())))
+                .orElse(false);
     }
 
     @Transactional
