@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/restaurant/**").hasAnyRole("RESTAURANT", "RESTAURANT_MANAGER", "RESTAURANT_STAFF", "RESTAURANT_CASHIER")
                         .requestMatchers("/api/rider/**").hasRole("RIDER")
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/api/payments/webhook").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -111,4 +112,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }

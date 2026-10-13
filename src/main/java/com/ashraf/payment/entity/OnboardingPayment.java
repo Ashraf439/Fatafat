@@ -1,4 +1,4 @@
-package com.ashraf.payment.dto;
+package com.ashraf.payment.entity;
 
 import com.ashraf.payment.enums.OnboardingPaymentStatus;
 import com.ashraf.restaurant.onboarding.entity.RestaurantOnboardingApplication;

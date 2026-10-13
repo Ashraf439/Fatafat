@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+import static reactor.netty.http.HttpConnectionLiveness.log;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -115,6 +117,7 @@ public class GlobalExceptionHandler {
     // a clean JSON response instead of leaking a stack trace to the client.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneric(Exception ex) {
+        log.error("Unhandled exception", ex);
         return buildResponse("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -128,4 +131,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleRateLimitExceeded(RateLimitExceedException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.TOO_MANY_REQUESTS);
     }
+
 }

@@ -3,7 +3,7 @@ package com.ashraf.restaurant.onboarding.service;
 import com.ashraf.commerce.entity.BankDetails;
 import com.ashraf.core.entity.User;
 import com.ashraf.payment.OrderResult;
-import com.ashraf.payment.dto.OnboardingPayment;
+import com.ashraf.payment.entity.OnboardingPayment;
 import com.ashraf.payment.enums.OnboardingPaymentStatus;
 import com.ashraf.payment.repository.OnboardingPaymentRepository;
 import com.ashraf.payment.service.PaymentService;

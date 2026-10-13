@@ -1,13 +1,9 @@
 package com.ashraf.customer.service;
 
+import com.ashraf.commerce.enums.PaymentMethod;
 import com.ashraf.commerce.enums.PaymentStatus;
 import com.ashraf.core.entity.User;
-import com.ashraf.customer.dto.OrderLineRequest;
-import com.ashraf.customer.dto.OrderQuoteResponse;
-import com.ashraf.customer.dto.OrderResponse;
-import com.ashraf.customer.dto.OrderSummaryResponse;
-import com.ashraf.customer.dto.PlaceOrderRequest;
-import com.ashraf.customer.dto.QuoteRequest;
+import com.ashraf.customer.dto.*;
 import com.ashraf.customer.entity.Customer;
 import com.ashraf.customer.entity.CustomerAddress;
 import com.ashraf.restaurant.core.entity.Menu;
@@ -124,7 +120,8 @@ public class CustomerOrderService {
         order.setCustomer(customer);
         order.setRestaurant(cart.restaurant());
         order.setDeliveryAddress(address);
-        order.setOrderStatus(OrderStatus.PLACED);
+        order.setOrderStatus(req.paymentMethod() == PaymentMethod.ONLINE
+                ? OrderStatus.PENDING_PAYMENT : OrderStatus.PLACED);
         order.setOrderDate(now);
         order.setSubtotal(price.subtotal());
         order.setDeliveryFee(price.deliveryFee());

@@ -1,35 +1,29 @@
 package com.ashraf.customer.controller;
 
-import com.ashraf.customer.dto.CancelOrderRequest;
-import com.ashraf.customer.dto.OrderQuoteResponse;
-import com.ashraf.customer.dto.OrderResponse;
-import com.ashraf.customer.dto.OrderSummaryResponse;
-import com.ashraf.customer.dto.PlaceOrderRequest;
-import com.ashraf.customer.dto.QuoteRequest;
+import com.ashraf.customer.dto.*;
 import com.ashraf.customer.security.CustomUserDetails;
 import com.ashraf.customer.service.CustomerOrderService;
+import com.ashraf.customer.service.CustomerPaymentService;
+import com.ashraf.customer.service.CustomerPaymentService.PaymentSession;
+import com.ashraf.payment.dto.VerifyOrderPaymentRequest;
 import com.ashraf.shared.dto.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/customer/orders")
 public class CustomerOrderController {
 
     private final CustomerOrderService orderService;
+    private final CustomerPaymentService customerPaymentService;
 
-    public CustomerOrderController(CustomerOrderService orderService) {
+    public CustomerOrderController(CustomerOrderService orderService,
+                                   CustomerPaymentService customerPaymentService) {
         this.orderService = orderService;
+        this.customerPaymentService = customerPaymentService;
     }
 
     @PostMapping("/quote")
@@ -63,5 +57,18 @@ public class CustomerOrderController {
                                                 @Valid @RequestBody(required = false) CancelOrderRequest request) {
         String reason = request != null ? request.reason() : null;
         return ResponseEntity.ok(orderService.cancel(principal.getUser(), orderId, reason));
+    }
+
+    @PostMapping("/{orderId}/payment")
+    public ResponseEntity<PaymentSession> startPayment(@AuthenticationPrincipal CustomUserDetails principal,
+                                                       @PathVariable("orderId") Long orderId) {
+        return ResponseEntity.ok(customerPaymentService.start(principal.getUser(), orderId));
+    }
+
+    @PostMapping("/{orderId}/payment/verify")
+    public ResponseEntity<OrderResponse> verifyPayment(@AuthenticationPrincipal CustomUserDetails principal,
+                                                       @PathVariable("orderId") Long orderId,
+                                                       @Valid @RequestBody VerifyOrderPaymentRequest request) {
+        return ResponseEntity.ok(customerPaymentService.confirm(principal.getUser(), orderId, request));
     }
 }

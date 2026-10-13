@@ -2,13 +2,16 @@ package com.ashraf.payment.service;
 
 import com.ashraf.config.RazorpayConfig;
 import com.ashraf.payment.OrderResult;
+import com.ashraf.shared.exception.BusinessRuleException;
 import com.ashraf.shared.utils.PaymentUtils;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class PaymentService {
 
@@ -20,6 +23,7 @@ public class PaymentService {
         this.razorpayConfig = razorpayConfig;
     }
 
+    /** Restaurant onboarding fee (unchanged). */
     public OrderResult createOrder(Long applicationId, double amount) throws RazorpayException {
 
         if (amount <= 0) {
@@ -42,6 +46,30 @@ public class PaymentService {
         long razorpayAmount = ((Number) rawAmount).longValue();
 
         return new OrderResult(orderId, razorpayAmount);
+    }
+
+    /** Customer food orders. Takes paise directly; never pass floating-point money. */
+    public OrderResult createOrder(long amountInPaise, String receipt) {
+
+        if (amountInPaise <= 0) {
+            throw new IllegalArgumentException("Payment amount must be greater than zero");
+        }
+
+        // Razorpay rejects receipts longer than 40 characters.
+        String safeReceipt = receipt.length() > 40 ? receipt.substring(0, 40) : receipt;
+
+        try {
+            JSONObject req = new JSONObject()
+                    .put("amount", amountInPaise)
+                    .put("currency", "INR")
+                    .put("receipt", safeReceipt);
+
+            Order o = razorpayClient.orders.create(req);
+            return new OrderResult(o.get("id").toString(), ((Number) o.get("amount")).longValue());
+        } catch (RazorpayException e) {
+            log.error("Razorpay order creation failed for receipt {}", safeReceipt, e);
+            throw new BusinessRuleException("We couldn't start the payment. Please try again in a moment.");
+        }
     }
 
     public boolean verifyPayment(String orderId, String paymentId, String razorpaySignature) {
