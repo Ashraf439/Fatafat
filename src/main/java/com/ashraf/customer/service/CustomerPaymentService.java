@@ -9,8 +9,10 @@ import com.ashraf.customer.entity.Customer;
 import com.ashraf.payment.OrderResult;
 import com.ashraf.payment.dto.VerifyOrderPaymentRequest;
 import com.ashraf.payment.entity.OrderPayment;
+import com.ashraf.payment.enums.RefundReason;
 import com.ashraf.payment.repository.OrderPaymentRepository;
 import com.ashraf.payment.service.PaymentService;
+import com.ashraf.payment.service.RefundService;
 import com.ashraf.restaurant.core.entity.Order;
 import com.ashraf.restaurant.core.enums.OrderStatus;
 import com.ashraf.restaurant.core.repository.OrderRepository;
@@ -36,17 +38,19 @@ public class CustomerPaymentService {
     private final OrderRepository orderRepository;
     private final OrderPaymentRepository paymentRepo;
     private final CustomerLookupService customerLookup;
+    private final RefundService refundService;
 
     public CustomerPaymentService(PaymentService paymentService,
                                   RazorpayConfig razorpayConfig,
                                   OrderRepository orderRepository,
                                   OrderPaymentRepository paymentRepo,
-                                  CustomerLookupService customerLookup) {
+                                  CustomerLookupService customerLookup, RefundService refundService) {
         this.paymentService = paymentService;
         this.razorpayConfig = razorpayConfig;
         this.orderRepository = orderRepository;
         this.paymentRepo = paymentRepo;
         this.customerLookup = customerLookup;
+        this.refundService = refundService;
     }
 
     // ---- customer-facing ---------------------------------------------------------------
@@ -136,10 +140,9 @@ public class CustomerPaymentService {
         if (order.getOrderStatus() == OrderStatus.PENDING_PAYMENT) {
             order.setOrderStatus(OrderStatus.PLACED);    // only now does the restaurant see it
         } else if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-            // The order expired before the money arrived. Money was taken, so this needs a refund.
-            log.warn("Payment {} captured for cancelled order {} - refund required",
-                    razorpayPaymentId, order.getId());
-            // TODO: call the refund API and set PaymentStatus.REFUNDED
+            // The order expired before the money arrived: give it straight back.
+            log.warn("Payment {} captured for cancelled order {} - refunding", razorpayPaymentId, order.getId());
+            refundService.request(order, payment, payment.getAmountPaise(), RefundReason.LATE_PAYMENT, null);
         }
     }
 

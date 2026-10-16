@@ -1,11 +1,12 @@
 package com.ashraf.restaurant.core.entity;
 
-import com.ashraf.customer.entity.Customer;
-import com.ashraf.customer.entity.CustomerAddress;
-import com.ashraf.rider.entity.Delivery;
-import com.ashraf.restaurant.core.enums.OrderStatus;
 import com.ashraf.commerce.enums.PaymentMethod;
 import com.ashraf.commerce.enums.PaymentStatus;
+import com.ashraf.customer.entity.Customer;
+import com.ashraf.customer.entity.CustomerAddress;
+import com.ashraf.payment.entity.OrderRefund;
+import com.ashraf.restaurant.core.enums.OrderStatus;
+import com.ashraf.rider.entity.Delivery;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -62,6 +64,9 @@ public class Order {
     private String specialInstructions;
     private String cancelReason;
     private LocalDateTime estimatedDeliveryTime;
+
+    @OneToMany(mappedBy = "order")           // no cascade: refunds are only created through RefundService
+    private List<OrderRefund> refunds = new ArrayList<>();
 
     @CreationTimestamp
     private LocalDateTime createdAt;

@@ -1,6 +1,7 @@
 package com.ashraf.payment.controller;
 
 import com.ashraf.customer.service.CustomerPaymentService;
+import com.ashraf.payment.service.RefundService;
 import com.ashraf.shared.utils.PaymentUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -16,11 +17,14 @@ import java.nio.charset.StandardCharsets;
 public class PaymentWebhookController {
 
     private final CustomerPaymentService customerPayments;
+    private final RefundService refundService;
     private final String webhookSecret;
 
     public PaymentWebhookController(CustomerPaymentService customerPayments,
+                                    RefundService refundService,
                                     @Value("${razor.webhook.secret:}") String webhookSecret) {
         this.customerPayments = customerPayments;
+        this.refundService = refundService;
         this.webhookSecret = webhookSecret;
     }
 
@@ -37,33 +41,42 @@ public class PaymentWebhookController {
         }
 
         JSONObject event = new JSONObject(rawBody);
-        String type = event.optString("event");
+        JSONObject payload = event.optJSONObject("payload");
+        if (payload == null) return ResponseEntity.ok().build();
 
-        JSONObject payment = event.optJSONObject("payload") == null ? null
-                : event.getJSONObject("payload").optJSONObject("payment") == null ? null
-                : event.getJSONObject("payload").getJSONObject("payment").optJSONObject("entity");
-
-        if (payment == null || payment.optString("order_id").isBlank()) {
-            return ResponseEntity.ok().build();             // not something we track
-        }
-
-        String razorpayOrderId = payment.getString("order_id");
-
-        switch (type) {
+        switch (event.optString("event")) {
             case "payment.captured" -> {
-                boolean handled = customerPayments.onCaptured(
-                        razorpayOrderId, payment.getString("id"), payment.getLong("amount"));
-                if (!handled) {
-                    // Not a customer order. Onboarding payments are still confirmed via /api/payments/verify only.
-                    log.warn("payment.captured for unknown razorpay order {} (onboarding?)", razorpayOrderId);
+                JSONObject p = entity(payload, "payment");
+                if (p != null && !p.optString("order_id").isBlank()
+                        && !customerPayments.onCaptured(p.getString("order_id"), p.getString("id"), p.getLong("amount"))) {
+                    log.warn("payment.captured for unknown razorpay order {} (onboarding?)", p.getString("order_id"));
                 }
             }
-            case "payment.failed" -> customerPayments.onFailed(razorpayOrderId);
-            default -> log.debug("Ignoring webhook event {}", type);
+            case "payment.failed" -> {
+                JSONObject p = entity(payload, "payment");
+                if (p != null && !p.optString("order_id").isBlank()) {
+                    customerPayments.onFailed(p.getString("order_id"));
+                }
+            }
+            case "refund.processed" -> {
+                JSONObject r = entity(payload, "refund");
+                if (r != null) refundService.onGatewayRefundEvent(r, true);
+            }
+            case "refund.failed" -> {
+                JSONObject r = entity(payload, "refund");
+                if (r != null) refundService.onGatewayRefundEvent(r, false);
+            }
+            default -> log.debug("Ignoring webhook event {}", event.optString("event"));
         }
 
         // 2xx for everything we understood. Exceptions above surface as 5xx so Razorpay retries.
         return ResponseEntity.ok().build();
+    }
+
+    /** payload.<key>.entity, or null if absent. */
+    private static JSONObject entity(JSONObject payload, String key) {
+        JSONObject wrapper = payload.optJSONObject(key);
+        return wrapper == null ? null : wrapper.optJSONObject("entity");
     }
 
     private boolean signatureValid(String rawBody, String signature) {

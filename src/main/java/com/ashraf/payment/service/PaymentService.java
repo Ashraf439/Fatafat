@@ -2,14 +2,19 @@ package com.ashraf.payment.service;
 
 import com.ashraf.config.RazorpayConfig;
 import com.ashraf.payment.OrderResult;
+import com.ashraf.payment.RefundResult;
 import com.ashraf.shared.exception.BusinessRuleException;
+import com.ashraf.shared.exception.RefundGatewayException;
 import com.ashraf.shared.utils.PaymentUtils;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
+import com.razorpay.Refund;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -81,5 +86,47 @@ public class PaymentService {
         } catch (Exception e) {
             return false;
         }
+    }
+    public RefundResult refund(String razorpayPaymentId, long amountPaise, String receipt) {
+        try {
+            JSONObject req = new JSONObject()
+                    .put("amount", amountPaise)
+                    .put("speed", "normal")          // free; instant refunds carry a fee
+                    .put("receipt", receipt);
+            Refund r = razorpayClient.payments.refund(razorpayPaymentId, req);
+            return new RefundResult(r.get("id").toString(), String.valueOf(r.get("status")));
+        } catch (RazorpayException e) {
+            throw gatewayError(e);
+        }
+    }
+
+    public Optional<RefundResult> findRefundByReceipt(String razorpayPaymentId, String receipt) {
+        try {
+            for (Refund r : razorpayClient.payments.fetchAllRefunds(razorpayPaymentId)) {
+                JSONObject json = r.toJson();
+                if (receipt.equals(json.optString("receipt", null))) {
+                    return Optional.of(new RefundResult(json.getString("id"), json.optString("status")));
+                }
+            }
+            return Optional.empty();
+        } catch (RazorpayException e) {
+            throw gatewayError(e);
+        }
+    }
+
+    public String fetchRefundStatus(String razorpayPaymentId, String razorpayRefundId) {
+        try {
+            return razorpayClient.payments.fetchRefund(razorpayPaymentId, razorpayRefundId)
+                    .toJson().optString("status");
+        } catch (RazorpayException e) {
+            throw gatewayError(e);
+        }
+    }
+
+    private static RefundGatewayException gatewayError(RazorpayException e) {
+        int code = e.getStatusCode();
+        boolean definitive = code >= 400 && code < 500 && code != 429;
+        String message = e.getDescription() != null ? e.getDescription() : e.getMessage();
+        return new RefundGatewayException(message, definitive, e);
     }
 }

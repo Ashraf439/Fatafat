@@ -1,5 +1,7 @@
 package com.ashraf.customer.dto;
 
+import com.ashraf.payment.entity.OrderRefund;
+import com.ashraf.payment.enums.RefundStatus;
 import com.ashraf.restaurant.core.entity.Order;
 import com.ashraf.restaurant.core.enums.OrderStatus;
 
@@ -25,9 +27,20 @@ public record OrderResponse(
         String cancelReason,
         LocalDateTime placedAt,
         LocalDateTime estimatedDeliveryTime,
-        boolean cancellable
+        boolean cancellable,
+        RefundInfo refund                       // null when nothing has been refunded
 ) {
     public record RestaurantRef(Long id, String name, String imageUrl) {}
+
+    public record RefundInfo(BigDecimal amount, String status) {}
+
+    private static RefundInfo refundInfo(Order o) {
+        var active = o.getRefunds().stream().filter(r -> r.getStatus() != RefundStatus.FAILED).toList();
+        if (active.isEmpty()) return null;
+        long paise = active.stream().mapToLong(OrderRefund::getAmountPaise).sum();
+        boolean done = active.stream().allMatch(r -> r.getStatus() == RefundStatus.PROCESSED);
+        return new RefundInfo(BigDecimal.valueOf(paise, 2), done ? "PROCESSED" : "PENDING");
+    }
 
     public static OrderResponse from(Order o) {
         List<OrderItemResponse> lines = o.getItems().stream()
@@ -55,6 +68,7 @@ public record OrderResponse(
                 o.getCancelReason(),
                 o.getOrderDate() != null ? o.getOrderDate() : o.getCreatedAt(),
                 o.getEstimatedDeliveryTime(),
-                o.getOrderStatus() == OrderStatus.PLACED);
+                o.getOrderStatus() == OrderStatus.PLACED || o.getOrderStatus() == OrderStatus.PENDING_PAYMENT,
+                refundInfo(o));
     }
 }

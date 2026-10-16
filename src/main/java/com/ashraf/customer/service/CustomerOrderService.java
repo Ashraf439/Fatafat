@@ -6,6 +6,8 @@ import com.ashraf.core.entity.User;
 import com.ashraf.customer.dto.*;
 import com.ashraf.customer.entity.Customer;
 import com.ashraf.customer.entity.CustomerAddress;
+import com.ashraf.payment.enums.RefundReason;
+import com.ashraf.payment.service.RefundService;
 import com.ashraf.restaurant.core.entity.Menu;
 import com.ashraf.restaurant.core.entity.Order;
 import com.ashraf.restaurant.core.entity.OrderItem;
@@ -49,6 +51,7 @@ public class CustomerOrderService {
     private final CustomerAddressService addressService;
     private final OrderPricingService pricing;
     private final OrderPricingProperties props;
+    private final RefundService refundService;
 
     public CustomerOrderService(OrderRepository orderRepository,
                                 RestaurantRepository restaurantRepository,
@@ -56,7 +59,7 @@ public class CustomerOrderService {
                                 CustomerLookupService customerLookup,
                                 CustomerAddressService addressService,
                                 OrderPricingService pricing,
-                                OrderPricingProperties props) {
+                                OrderPricingProperties props, RefundService refundService) {
         this.orderRepository = orderRepository;
         this.restaurantRepository = restaurantRepository;
         this.menuRepository = menuRepository;
@@ -64,6 +67,7 @@ public class CustomerOrderService {
         this.addressService = addressService;
         this.pricing = pricing;
         this.props = props;
+        this.refundService = refundService;
     }
 
     // ---- quote ---------------------------------------------------------------------------
@@ -168,13 +172,19 @@ public class CustomerOrderService {
 
     @Transactional
     public OrderResponse cancel(User user, Long orderId, String reason) {
-        Order order = requireOrder(user, orderId);
-        if (order.getOrderStatus() != OrderStatus.PLACED) {
-            throw new BusinessRuleException(
-                    "This order is already being prepared and can no longer be cancelled.");
+        Customer customer = customerLookup.requireCustomer(user);
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .filter(o -> o.getCustomer().getId().equals(customer.getId()))
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        OrderStatus status = order.getOrderStatus();
+        if (status != OrderStatus.PLACED && status != OrderStatus.PENDING_PAYMENT) {
+            throw new BusinessRuleException("This order is already being prepared and can no longer be cancelled.");
         }
         order.setOrderStatus(OrderStatus.CANCELLED);
         order.setCancelReason(blankToNull(reason) != null ? reason.trim() : "Cancelled by customer");
+
+        refundService.refundInFull(order, RefundReason.CUSTOMER_CANCELLED);   // no-op for cash / unpaid orders
         return OrderResponse.from(order);
     }
 
