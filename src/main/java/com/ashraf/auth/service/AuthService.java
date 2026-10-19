@@ -97,7 +97,7 @@ public class AuthService {
      * a valid refresh token without re-checking credentials.
      */
     public String issueAccessToken(User user, List<String> roleNames) {
-        return jwtUtil.generateToken(user.getId(), user.getEmail(), roleNames, user.getStatus().name());
+        return jwtUtil.generateToken(user.getPublicId(), user.getEmail(), roleNames, user.getStatus().name());
     }
 
     @Transactional

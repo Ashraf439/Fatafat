@@ -18,10 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.ashraf.restaurant.core.enums.OrderStatus.*;
 
@@ -75,7 +72,7 @@ public class RestaurantOrderService {
     // ---- moving an order forward -------------------------------------------------------------
 
     @Transactional
-    public RestaurantOrderResponse advance(User user, Long orderId, OrderStatus target) {
+    public RestaurantOrderResponse advance(User user, UUID orderId, OrderStatus target) {
         requirePermission(user, "ORDER_ACCEPT");
         Order order = lockOwnedOrder(user, orderId);
 
@@ -95,7 +92,7 @@ public class RestaurantOrderService {
     // ---- cancelling / rejecting --------------------------------------------------------------
 
     @Transactional
-    public RestaurantOrderResponse cancel(User user, Long orderId, String reason) {
+    public RestaurantOrderResponse cancel(User user, UUID orderId, String reason) {
         requirePermission(user, "ORDER_CANCEL");
         Order order = lockOwnedOrder(user, orderId);
 
@@ -116,9 +113,9 @@ public class RestaurantOrderService {
     // ---- internals ---------------------------------------------------------------------------
 
     /** Locks the row, and only hands it over if it belongs to this user's restaurant. */
-    private Order lockOwnedOrder(User user, Long orderId) {
+    private Order lockOwnedOrder(User user, UUID orderId) {
         Long restaurantId = access.resolveRestaurantId(user);
-        return orderRepository.findByIdForUpdate(orderId)
+        return orderRepository.findByPublicIdForUpdate(orderId)
                 .filter(o -> o.getRestaurant().getId().equals(restaurantId))
                 // An unpaid order doesn't exist as far as the restaurant is concerned.
                 .filter(o -> o.getOrderStatus() != PENDING_PAYMENT)
@@ -131,7 +128,7 @@ public class RestaurantOrderService {
         OrderStatus next = canAccept ? NEXT.get(s) : null;
 
         return new RestaurantOrderResponse(
-                o.getId(),
+                o.getPublicId(),
                 s.name(),
                 o.getOrderDate() != null ? o.getOrderDate() : o.getCreatedAt(),
                 o.getEstimatedDeliveryTime(),

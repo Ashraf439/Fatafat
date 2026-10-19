@@ -5,10 +5,11 @@ import com.ashraf.customer.dto.AddressResponse;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /** An order as the restaurant sees it. Contact details stay hidden until the order has been accepted. */
 public record RestaurantOrderResponse(
-        Long id,
+        UUID id,
         String status,
         LocalDateTime placedAt,
         LocalDateTime estimatedDeliveryTime,

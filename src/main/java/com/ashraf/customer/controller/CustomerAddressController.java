@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/customer/addresses")
@@ -43,20 +44,20 @@ public class CustomerAddressController {
 
     @PutMapping("/{addressId}")
     public ResponseEntity<AddressResponse> update(@AuthenticationPrincipal CustomUserDetails principal,
-                                                  @PathVariable("addressId") Long addressId,
+                                                  @PathVariable("addressId") UUID addressId,
                                                   @Valid @RequestBody AddressUpsertRequest request) {
         return ResponseEntity.ok(addressService.update(principal.getUser(), addressId, request));
     }
 
     @PatchMapping("/{addressId}/default")
     public ResponseEntity<AddressResponse> setDefault(@AuthenticationPrincipal CustomUserDetails principal,
-                                                      @PathVariable("addressId") Long addressId) {
+                                                      @PathVariable("addressId") UUID addressId) {
         return ResponseEntity.ok(addressService.setDefault(principal.getUser(), addressId));
     }
 
     @DeleteMapping("/{addressId}")
     public ResponseEntity<Void> delete(@AuthenticationPrincipal CustomUserDetails principal,
-                                       @PathVariable("addressId") Long addressId) {
+                                       @PathVariable("addressId") UUID addressId) {
         addressService.archive(principal.getUser(), addressId);
         return ResponseEntity.noContent().build();
     }

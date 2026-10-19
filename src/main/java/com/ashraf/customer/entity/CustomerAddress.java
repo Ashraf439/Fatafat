@@ -1,6 +1,7 @@
 package com.ashraf.customer.entity;
 
 import com.ashraf.commerce.enums.AddressType;
+import com.ashraf.shared.entity.PublicIdEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
 @Table(name = "address_normalized")
 @Getter
 @Setter
-public class CustomerAddress {
+public class CustomerAddress extends PublicIdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

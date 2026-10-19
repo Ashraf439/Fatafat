@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/restaurant/staff")
@@ -45,7 +46,7 @@ public class RestaurantStaffController {
 
     @DeleteMapping("/{staffUserId}")
     public ResponseEntity<Map<String, String>> removeStaff(@AuthenticationPrincipal CustomUserDetails principal,
-                                                           @PathVariable Long staffUserId) {
+                                                           @PathVariable UUID staffUserId) {
         requirePermission(principal, "STAFF_REMOVE");
         restaurantStaffService.removeStaff(principal.getUser(), staffUserId);
         return ResponseEntity.ok(Map.of("message", "Removed the staff"));
@@ -54,7 +55,7 @@ public class RestaurantStaffController {
     @PatchMapping("/{staffUserId}/permissions")
     public ResponseEntity<Map<String, String>> updateStaffPermission(@RequestBody @Valid StaffPermissionRequest request,
                                                                      @AuthenticationPrincipal CustomUserDetails principal,
-                                                                     @PathVariable Long staffUserId) {
+                                                                     @PathVariable UUID staffUserId) {
         requirePermission(principal, "STAFF_MANAGE_PERMISSIONS");
         restaurantStaffService.updateStaffPermission(principal.getUser(), staffUserId, request);
         return ResponseEntity.ok(Map.of("message", "Updated staff permission"));

@@ -7,6 +7,7 @@ import com.ashraf.customer.entity.CustomerAddress;
 import com.ashraf.payment.entity.OrderRefund;
 import com.ashraf.restaurant.core.enums.OrderStatus;
 import com.ashraf.rider.entity.Delivery;
+import com.ashraf.shared.entity.PublicIdEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,7 @@ import java.util.List;
 @Table(name = "orders")
 @Getter
 @Setter
-public class Order {
+public class Order extends PublicIdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

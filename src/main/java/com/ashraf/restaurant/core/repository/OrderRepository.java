@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
@@ -30,11 +31,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("select o from Order o where o.id = :id")
     Optional<Order> findByIdForUpdate(@Param("id") Long id);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from Order o where o.publicId = :publicId")
+    Optional<Order> findByPublicIdForUpdate(@Param("publicId") UUID publicId);
+
+    @EntityGraph(attributePaths = {"restaurant", "items", "deliveryAddress"})
+    Optional<Order> findWithDetailsByPublicIdAndCustomer_Id(UUID publicId, Long customerId);
+
     @Query("select o.id from Order o where o.orderStatus = :status and o.createdAt < :cutoff")
     List<Long> findIdsByStatusCreatedBefore(@Param("status") OrderStatus status,
                                             @Param("cutoff") LocalDateTime cutoff);
 
-    // ---- new: restaurant side ----------------------------------------------------------------
 
     /** The kitchen queue, oldest first so the longest-waiting order is always on top. */
     @EntityGraph(attributePaths = {"customer", "deliveryAddress", "items"})

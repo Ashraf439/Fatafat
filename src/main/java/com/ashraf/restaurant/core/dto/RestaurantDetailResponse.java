@@ -4,11 +4,12 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 /** Header data for a restaurant page: identity, address, opening hours and menu stats. */
 @Getter
 public class RestaurantDetailResponse {
-    private final Long id;
+    private final UUID id;
     private final String name;
     private final Boolean isOpen;
     private final String imageUrl;
@@ -23,7 +24,7 @@ public class RestaurantDetailResponse {
     private final Integer avgPrepTimeMinutes;
     private final Boolean pureVeg;
 
-    public RestaurantDetailResponse(Long id, String name, Boolean isOpen, String imageUrl,
+    public RestaurantDetailResponse(UUID id, String name, Boolean isOpen, String imageUrl,
                                     String street, String landmark, String city, String state,
                                     String pincode, List<TimingSlotResponse> timings,
                                     Integer menuItemCount, BigDecimal startingPrice,

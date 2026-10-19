@@ -3,11 +3,12 @@ package com.ashraf.restaurant.core.dto;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 /** Card-level view of a restaurant for customer browsing. */
 @Getter
 public class RestaurantSummaryResponse {
-    private final Long id;
+    private final UUID id;
     private final String name;
     private final Boolean isOpen;
     private final String street;
@@ -18,7 +19,7 @@ public class RestaurantSummaryResponse {
     private final Integer avgPrepTimeMinutes;
     private final Boolean pureVeg;
 
-    public RestaurantSummaryResponse(Long id, String name, Boolean isOpen,
+    public RestaurantSummaryResponse(UUID id, String name, Boolean isOpen,
                                      String street, String city, String imageUrl,
                                      Integer menuItemCount, BigDecimal startingPrice,
                                      Integer avgPrepTimeMinutes, Boolean pureVeg) {

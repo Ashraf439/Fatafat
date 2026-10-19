@@ -2,6 +2,7 @@ package com.ashraf.auth.dto;
 
 import lombok.Getter;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class LoginResponse {
@@ -15,7 +16,7 @@ public class LoginResponse {
 
     @Getter
     public static class Account {
-        private Long id;
+        private UUID id;
         private String name;
         private String email;
         private String phoneNumber;
@@ -23,7 +24,7 @@ public class LoginResponse {
         private List<String> roles;
         private String createdAt;
 
-        public Account(Long id, String name, String email, String phoneNumber, String status, List<String> roles,
+        public Account(UUID id, String name, String email, String phoneNumber, String status, List<String> roles,
                        String createdAt) {
             this.id = id;
             this.name = name;

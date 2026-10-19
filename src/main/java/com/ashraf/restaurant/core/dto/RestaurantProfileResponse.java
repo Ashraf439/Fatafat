@@ -3,6 +3,8 @@ package com.ashraf.restaurant.core.dto;
 import com.ashraf.restaurant.onboarding.enums.RestaurantOnboardingStatus;
 import lombok.Getter;
 
+import java.util.UUID;
+
 /**
  * "My restaurant" profile for the owner's dashboard. Before go-live (application
  * under review or approved-pending-payment) id/isOpen/imageUrl/address details/
@@ -12,7 +14,7 @@ import lombok.Getter;
  */
 @Getter
 public class RestaurantProfileResponse {
-    private final Long id;
+    private final UUID id;
     private final String name;
     private final String ownerName;
     private final RestaurantOnboardingStatus onboardingStatus;
@@ -25,7 +27,7 @@ public class RestaurantProfileResponse {
     private final String fssaiLicense;
     private final String gstin;
 
-    public RestaurantProfileResponse(Long id, String name, String ownerName, RestaurantOnboardingStatus onboardingStatus,
+    public RestaurantProfileResponse(UUID id, String name, String ownerName, RestaurantOnboardingStatus onboardingStatus,
                                      Boolean isOpen, String imageUrl, String street, String city, String state,
                                      String pincode, String fssaiLicense, String gstin) {
         this.id = id;

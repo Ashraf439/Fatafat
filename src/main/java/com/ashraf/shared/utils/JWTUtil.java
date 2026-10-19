@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Component
@@ -21,18 +22,19 @@ public class JWTUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(Long userId, String email, java.util.List<String> roles, String status) {
+    public String generateToken(UUID userPublicId, String email, java.util.List<String> roles, String status) {
         return Jwts.builder()
                 .subject(email)
-                .claim("userId", userId)
+                .claim("userId", userPublicId.toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public Long extractUserId(String token) {
-        return extractAllClaims(token).get("userId", Long.class);
+    public UUID extractUserId(String token) {
+
+        return UUID.fromString(extractAllClaims(token).get("uid", String.class));
     }
 
     public String extractEmail(String token) {

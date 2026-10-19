@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RestaurantOnboardingService {
@@ -103,9 +104,9 @@ public class RestaurantOnboardingService {
     }
 
     @Transactional
-    public RestaurantOnboardingApplication approveApplication(Long applicationId, User admin) {
+    public RestaurantOnboardingApplication approveApplication(UUID applicationId, User admin) {
         RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository
-                .findById(applicationId)
+                .findByPublicId(applicationId)
                 .orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
 
         if (application.getStatus() != RestaurantOnboardingStatus.UNDER_REVIEW) {
@@ -123,10 +124,10 @@ public class RestaurantOnboardingService {
     }
 
     @Transactional
-    public RestaurantOnboardingApplication rejectApplication(Long applicationId, User admin,
+    public RestaurantOnboardingApplication rejectApplication(UUID applicationId, User admin,
                                                              RejectApplicationRequest request) {
         RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository
-                .findById(applicationId)
+                .findByPublicId(applicationId)
                 .orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
 
         if (application.getStatus() != RestaurantOnboardingStatus.UNDER_REVIEW) {
@@ -144,9 +145,9 @@ public class RestaurantOnboardingService {
     }
 
     @Transactional
-    public OrderResult createPaymentOrder(Long applicationId, User user) throws RazorpayException {
+    public OrderResult createPaymentOrder(UUID applicationId, User user) throws RazorpayException {
         RestaurantOnboardingApplication application = restaurantOnboardingApplicationRepository
-                .findById(applicationId)
+                .findByPublicId(applicationId)
                 .orElseThrow(() -> new ApplicationNotFoundException("Application not found: " + applicationId));
 
         // Make sure the application belongs to this user
@@ -163,7 +164,7 @@ public class RestaurantOnboardingService {
 
         // Reuse existing unpaid order
         Optional<OnboardingPayment> existingPayment =
-                paymentRepository.findByRestaurantOnboardingApplication_Id(applicationId);
+                paymentRepository.findByRestaurantOnboardingApplication_Id(application.getId());
 
         if (existingPayment.isPresent()) {
             OnboardingPayment payment = existingPayment.get();
@@ -175,7 +176,7 @@ public class RestaurantOnboardingService {
             }
         }
 
-        OrderResult orderResult = paymentService.createOrder(applicationId, onboardingFeeAmount);
+        OrderResult orderResult = paymentService.createOrder(application.getId(), onboardingFeeAmount);
 
         OnboardingPayment payment = new OnboardingPayment();
         payment.setRestaurantOnboardingApplication(application);
@@ -285,7 +286,7 @@ public class RestaurantOnboardingService {
 
     private ApplicationSummaryResponse toSummary(RestaurantOnboardingApplication app) {
         return new ApplicationSummaryResponse(
-                app.getId(),
+                app.getPublicId(),
                 app.getRestaurantName(),
                 app.getUser().getEmail(),
                 app.getCity(),

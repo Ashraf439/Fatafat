@@ -170,7 +170,7 @@ public class AuthController {
                 .orElse(null);
 
         return new LoginResponse.Account(
-                user.getId(),
+                user.getPublicId(),
                 name,
                 user.getEmail(),
                 user.getPhoneNumber(),

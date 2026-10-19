@@ -6,10 +6,11 @@ import com.ashraf.restaurant.core.entity.OrderItem;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /** Row in the order-history list. */
 public record OrderSummaryResponse(
-        Long id,
+        UUID id,
         String status,
         Long restaurantId,
         String restaurantName,
@@ -29,7 +30,7 @@ public record OrderSummaryResponse(
                 .map(i -> i.getQuantity() + " × " + i.getDishNameSnapshot())
                 .toList();
         return new OrderSummaryResponse(
-                o.getId(),
+                o.getPublicId(),
                 o.getOrderStatus().name(),
                 o.getRestaurant().getId(),
                 o.getRestaurant().getName(),

@@ -22,11 +22,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,10 +44,10 @@ public class MenuService {
     }
 
     @Transactional
-    public MenuResponse updateMenuItemImage(User owner, Long menuId, MultipartFile file) {
+    public MenuResponse updateMenuItemImage(User owner, UUID menuId, MultipartFile file) {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(owner);
-        Menu menu = menuRepository.findById(menuId)
-                .orElseThrow(() -> new IllegalArgumentException("Menu item not found with ID: " + menuId));
+        Menu menu = menuRepository.findByPublicId(menuId)
+                .orElseThrow(() -> new IllegalArgumentException("Menu item not found"));
 
         if (!menu.getRestaurant().getId().equals(restaurantId)) {
             throw new AccessDeniedException("Menu item does not belong to your restaurant");
@@ -163,10 +159,11 @@ public class MenuService {
     }
 
     @Transactional(readOnly = true)
-    public CustomerMenuResponse getMenuForCustomer(Long restaurantId) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found: " + restaurantId));
+    public CustomerMenuResponse getMenuForCustomer(UUID publicId) {
+        Restaurant restaurant = restaurantRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant not found "));
 
+        Long restaurantId = restaurant.getId();
         Map<String, List<MenuResponse>> grouped = menuRepository.findByRestaurant_Id(restaurantId)
                 .stream()
                 .map(MenuResponse::new)
@@ -178,7 +175,7 @@ public class MenuService {
                         Collectors.toList()));
 
         return new CustomerMenuResponse(
-                restaurantId,
+                restaurant.getPublicId(),
                 restaurant.getName(),
                 restaurant.getIsOpen(),
                 restaurant.getImageUrl(),

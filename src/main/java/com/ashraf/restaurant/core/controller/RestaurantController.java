@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/restaurant")
@@ -99,7 +100,7 @@ public class RestaurantController {
 
     // Edit a single existing shift by its own id.
     @PatchMapping("/timings/{timingId}")
-    public ResponseEntity<TimingSlotResponse> updateTiming(@PathVariable Long timingId,
+    public ResponseEntity<TimingSlotResponse> updateTiming(@PathVariable UUID timingId,
                                                            @RequestBody TimingSlotRequest slot,
                                                            @AuthenticationPrincipal CustomUserDetails principal) {
         if (!permissionService.hasPermission(principal.getUser().getId(), "RESTAURANT_EDIT")) {
@@ -110,7 +111,7 @@ public class RestaurantController {
 
     // Remove a single shift.
     @DeleteMapping("/timings/{timingId}")
-    public ResponseEntity<Void> deleteTiming(@PathVariable Long timingId,
+    public ResponseEntity<Void> deleteTiming(@PathVariable UUID timingId,
                                              @AuthenticationPrincipal CustomUserDetails principal) {
         if (!permissionService.hasPermission(principal.getUser().getId(), "RESTAURANT_EDIT")) {
             throw new AccessDeniedException("No access");
@@ -130,7 +131,7 @@ public class RestaurantController {
     }
 
     @PostMapping(value = "/menu/{menuId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MenuResponse> uploadMenuItemImage(@PathVariable Long menuId,
+    public ResponseEntity<MenuResponse> uploadMenuItemImage(@PathVariable UUID menuId,
                                                             @RequestParam("file") MultipartFile file,
                                                             @AuthenticationPrincipal CustomUserDetails principal) {
         if (!permissionService.hasPermission(principal.getUser().getId(), "MENU_ITEM_ADD")) {

@@ -27,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -79,7 +76,7 @@ public class CustomerOrderService {
 
         List<OrderQuoteResponse.Line> lines = cart.lines().stream()
                 .map(l -> new OrderQuoteResponse.Line(
-                        l.menu().getId(),
+                        l.menu().getPublicId(),
                         l.menu().getDishName(),
                         l.menu().getImageUrl(),
                         l.menu().getFoodType() != null ? l.menu().getFoodType().name() : null,
@@ -89,7 +86,7 @@ public class CustomerOrderService {
                 .toList();
 
         return new OrderQuoteResponse(
-                cart.restaurant().getId(),
+                cart.restaurant().getPublicId(),
                 cart.restaurant().getName(),
                 lines,
                 price.subtotal(), price.deliveryFee(), price.taxAmount(),
@@ -166,14 +163,14 @@ public class CustomerOrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponse get(User user, Long orderId) {
+    public OrderResponse get(User user, UUID orderId) {
         return OrderResponse.from(requireOrder(user, orderId));
     }
 
     @Transactional
-    public OrderResponse cancel(User user, Long orderId, String reason) {
+    public OrderResponse cancel(User user, UUID orderId, String reason) {
         Customer customer = customerLookup.requireCustomer(user);
-        Order order = orderRepository.findByIdForUpdate(orderId)
+        Order order = orderRepository.findByPublicIdForUpdate(orderId)
                 .filter(o -> o.getCustomer().getId().equals(customer.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -188,9 +185,9 @@ public class CustomerOrderService {
         return OrderResponse.from(order);
     }
 
-    private Order requireOrder(User user, Long orderId) {
+    private Order requireOrder(User user, UUID orderId) {
         Customer customer = customerLookup.requireCustomer(user);
-        return orderRepository.findWithDetailsByIdAndCustomer_Id(orderId, customer.getId())
+        return orderRepository.findWithDetailsByPublicIdAndCustomer_Id(orderId, customer.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
     }
 
@@ -203,8 +200,8 @@ public class CustomerOrderService {
                                 BigDecimal subtotal, int longestPrepMinutes) {}
 
     /** Validates a cart against live data and prices it from the database. */
-    private ResolvedCart resolveCart(Long restaurantId, List<OrderLineRequest> requested) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+    private ResolvedCart resolveCart(UUID restaurantId, List<OrderLineRequest> requested) {
+        Restaurant restaurant = restaurantRepository.findByPublicId(restaurantId)
                 .filter(r -> r.getRestaurantOnboardingStatus() == RestaurantOnboardingStatus.LIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
@@ -214,15 +211,15 @@ public class CustomerOrderService {
         }
 
         // Merge duplicate menu ids so the same dish can't appear on two lines.
-        Map<Long, OrderLineRequest> merged = new LinkedHashMap<>();
+        Map<UUID, OrderLineRequest> merged = new LinkedHashMap<>();
         for (OrderLineRequest line : requested) {
             merged.merge(line.menuId(), line, (a, b) -> new OrderLineRequest(
                     a.menuId(), a.quantity() + b.quantity(),
                     a.specialInstructions() != null ? a.specialInstructions() : b.specialInstructions()));
         }
 
-        Map<Long, Menu> menus = menuRepository.findAllById(merged.keySet()).stream()
-                .collect(Collectors.toMap(Menu::getId, Function.identity()));
+        Map<UUID, Menu> menus = menuRepository.findByPublicIdIn(merged.keySet()).stream()
+                .collect(Collectors.toMap(Menu::getPublicId, Function.identity()));
 
         List<ResolvedLine> lines = new ArrayList<>();
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -230,7 +227,7 @@ public class CustomerOrderService {
 
         for (OrderLineRequest line : merged.values()) {
             Menu menu = menus.get(line.menuId());
-            if (menu == null || !menu.getRestaurant().getId().equals(restaurantId)) {
+            if (menu == null || !menu.getRestaurant().getId().equals(restaurant.getId())) {
                 throw new BusinessRuleException(
                         "Some items in your cart are no longer available. Please review your cart.");
             }

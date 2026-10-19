@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /** Covered by the existing /api/restaurant/** role rule in SecurityConfig; permissions are checked in the service. */
 @RestController
@@ -34,7 +35,7 @@ public class RestaurantOrderController {
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<RestaurantOrderResponse> updateStatus(
             @AuthenticationPrincipal CustomUserDetails principal,
-            @PathVariable("orderId") Long orderId,
+            @PathVariable("orderId") UUID orderId,
             @Valid @RequestBody UpdateOrderStatusRequest request) {
         return ResponseEntity.ok(orderService.advance(principal.getUser(), orderId, request.status()));
     }
@@ -42,7 +43,7 @@ public class RestaurantOrderController {
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<RestaurantOrderResponse> cancel(
             @AuthenticationPrincipal CustomUserDetails principal,
-            @PathVariable("orderId") Long orderId,
+            @PathVariable("orderId") UUID orderId,
             @Valid @RequestBody RestaurantCancelOrderRequest request) {
         return ResponseEntity.ok(orderService.cancel(principal.getUser(), orderId, request.reason()));
     }

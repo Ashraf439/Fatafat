@@ -3,6 +3,7 @@ package com.ashraf.restaurant.core.entity;
 import com.ashraf.commerce.entity.BankDetails;
 import com.ashraf.core.entity.User;
 import com.ashraf.restaurant.onboarding.enums.RestaurantOnboardingStatus;
+import com.ashraf.shared.entity.PublicIdEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,7 @@ import java.util.List;
 @Table(name = "restaurants")
 @Getter
 @Setter
-public class Restaurant {
+public class Restaurant extends PublicIdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -18,12 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -78,10 +73,12 @@ public class RestaurantDiscoveryService {
     }
 
     @Transactional(readOnly = true)
-    public RestaurantDetailResponse getDetail(Long restaurantId) {
-        Restaurant r = restaurantRepository.findById(restaurantId)
+    public RestaurantDetailResponse getDetail(UUID publicId) {
+        Restaurant r = restaurantRepository.findByPublicId(publicId)
                 .filter(x -> x.getRestaurantOnboardingStatus() == RestaurantOnboardingStatus.LIVE)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found: " + restaurantId));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found: " + publicId));
+
+        Long restaurantId = r.getId();
 
         RestaurantAddress address = addressesByRestaurant(List.of(restaurantId)).get(restaurantId);
         RestaurantMenuStats stats = statsByRestaurant(List.of(restaurantId)).get(restaurantId);
@@ -93,7 +90,7 @@ public class RestaurantDiscoveryService {
                 .toList();
 
         return new RestaurantDetailResponse(
-                r.getId(), r.getName(), r.getIsOpen(), r.getImageUrl(),
+                r.getPublicId(), r.getName(), r.getIsOpen(), r.getImageUrl(),
                 address != null ? address.getStreet() : null,
                 address != null ? address.getLandmark() : null,
                 address != null ? address.getCity() : null,
@@ -103,12 +100,11 @@ public class RestaurantDiscoveryService {
                 itemCount(stats), startingPrice(stats), avgPrep(stats), pureVeg(stats));
     }
 
-    // ---- helpers -------------------------------------------------------------------------
 
     private RestaurantSummaryResponse toSummary(Restaurant r, RestaurantAddress address,
                                                 RestaurantMenuStats stats) {
         return new RestaurantSummaryResponse(
-                r.getId(), r.getName(), r.getIsOpen(),
+                r.getPublicId(), r.getName(), r.getIsOpen(),
                 address != null ? address.getStreet() : null,
                 address != null ? address.getCity() : null,
                 r.getImageUrl(),

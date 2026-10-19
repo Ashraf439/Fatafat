@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Saved delivery addresses. Invariants kept here:
@@ -68,7 +69,7 @@ public class CustomerAddressService {
     }
 
     @Transactional
-    public AddressResponse update(User user, Long addressId, AddressUpsertRequest req) {
+    public AddressResponse update(User user, UUID addressId, AddressUpsertRequest req) {
         Customer customer = customerLookup.requireCustomer(user);
         List<CustomerAddress> active = loadNormalized(customer);
         CustomerAddress address = findIn(active, addressId);
@@ -81,7 +82,8 @@ public class CustomerAddressService {
     }
 
     @Transactional
-    public AddressResponse setDefault(User user, Long addressId) {
+    public AddressResponse setDefault(User user, UUID addressId) {
+
         Customer customer = customerLookup.requireCustomer(user);
         List<CustomerAddress> active = loadNormalized(customer);
         CustomerAddress address = findIn(active, addressId);
@@ -90,7 +92,7 @@ public class CustomerAddressService {
     }
 
     @Transactional
-    public void archive(User user, Long addressId) {
+    public void archive(User user, UUID addressId) {
         Customer customer = customerLookup.requireCustomer(user);
         List<CustomerAddress> active = loadNormalized(customer);
         CustomerAddress address = findIn(active, addressId);
@@ -112,8 +114,8 @@ public class CustomerAddressService {
 
     /** Address that belongs to this customer and is still active, else 404. */
     @Transactional(readOnly = true)
-    public CustomerAddress requireOwnedAddress(Customer customer, Long addressId) {
-        return addressRepository.findActiveByIdAndCustomerId(addressId, customer.getId())
+    public CustomerAddress requireOwnedAddress(Customer customer, UUID addressId) {
+        return addressRepository.findActiveByPublicIdAndCustomerId(addressId, customer.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery address not found"));
     }
 
@@ -145,9 +147,9 @@ public class CustomerAddressService {
         return active;
     }
 
-    private CustomerAddress findIn(List<CustomerAddress> active, Long addressId) {
+    private CustomerAddress findIn(List<CustomerAddress> active, UUID addressId) {
         return active.stream()
-                .filter(a -> a.getId().equals(addressId))
+                .filter(a -> a.getPublicId().equals(addressId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
     }

@@ -7,10 +7,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
+import java.util.UUID;
 
 public record PlaceOrderRequest(
-        @NotNull Long restaurantId,
-        @NotNull Long addressId,
+        @NotNull UUID restaurantId,
+        @NotNull UUID addressId,
         @NotNull PaymentMethod paymentMethod,
         @Size(max = 500) String specialInstructions,
         @NotEmpty @Size(max = 50) @Valid List<OrderLineRequest> items

@@ -1,9 +1,10 @@
 package com.ashraf.customer.dto;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record OrderItemResponse(
-        Long menuId,
+        UUID menuId,
         String dishName,
         int quantity,
         BigDecimal unitPrice,

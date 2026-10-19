@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/restaurant/onboarding")
@@ -73,7 +74,7 @@ public class RestaurantOnboardingController {
 
     @PostMapping("/applications/{id}/payment-order")
     public ResponseEntity<OrderResult> createPaymentOrder(
-            @PathVariable("id") Long applicationId,
+            @PathVariable("id") UUID applicationId,
             @AuthenticationPrincipal CustomUserDetails principal
     ) throws RazorpayException {
 

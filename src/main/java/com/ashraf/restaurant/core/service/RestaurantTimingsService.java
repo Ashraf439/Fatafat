@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,10 +94,10 @@ public class RestaurantTimingsService {
      * Edits a single shift by its own id, validated against the rest of that day's shifts.
      */
     @Transactional
-    public TimingSlotResponse updateTiming(User user, Long timingId, TimingSlotRequest slot) {
+    public TimingSlotResponse updateTiming(User user, UUID timingId, TimingSlotRequest slot) {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(user);
-        RestaurantTimings timing = restaurantTimingsRepository.findById(timingId)
-                .orElseThrow(() -> new IllegalArgumentException("Timing slot not found with ID: " + timingId));
+        RestaurantTimings timing = restaurantTimingsRepository.findByPublicId(timingId)
+                .orElseThrow(() -> new IllegalArgumentException("Timing slot not found"));
 
         if (!timing.getRestaurant().getId().equals(restaurantId)) {
             throw new AccessDeniedException("Timing slot does not belong to your restaurant");
@@ -105,7 +106,7 @@ public class RestaurantTimingsService {
         // Validate this shift's new values against every other existing shift (excluding itself).
         List<RestaurantTimings> others = restaurantTimingsRepository.findByRestaurant_IdOrderByDayOfWeekAscOpenTimeAsc(restaurantId)
                 .stream()
-                .filter(t -> !t.getId().equals(timingId))
+                .filter(t -> !t.getId().equals(timing.getId()))
                 .toList();
         List<TimingSlotRequest> proposed = others.stream().map(this::toRequest).collect(Collectors.toCollection(ArrayList::new));
         proposed.add(slot);
@@ -122,10 +123,10 @@ public class RestaurantTimingsService {
      * Removes a single shift.
      */
     @Transactional
-    public void deleteTiming(User user, Long timingId) {
+    public void deleteTiming(User user, UUID timingId) {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(user);
-        RestaurantTimings timing = restaurantTimingsRepository.findById(timingId)
-                .orElseThrow(() -> new IllegalArgumentException("Timing slot not found with ID: " + timingId));
+        RestaurantTimings timing = restaurantTimingsRepository.findByPublicId(timingId)
+                .orElseThrow(() -> new IllegalArgumentException("Timing slot not found"));
 
         if (!timing.getRestaurant().getId().equals(restaurantId)) {
             throw new AccessDeniedException("Timing slot does not belong to your restaurant");

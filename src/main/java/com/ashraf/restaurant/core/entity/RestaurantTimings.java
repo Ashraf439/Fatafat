@@ -1,5 +1,6 @@
 package com.ashraf.restaurant.core.entity;
 
+import com.ashraf.shared.entity.PublicIdEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +12,7 @@ import java.time.LocalTime;
 @Table(name = "restaurant_timings")
 @Getter
 @Setter
-public class RestaurantTimings {
+public class RestaurantTimings extends PublicIdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

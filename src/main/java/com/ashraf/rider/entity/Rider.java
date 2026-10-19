@@ -1,6 +1,7 @@
 package com.ashraf.rider.entity;
 
 import com.ashraf.core.entity.User;
+import com.ashraf.shared.entity.PublicIdEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,7 @@ import lombok.Setter;
 @Table(name = "riders")
 @Getter
 @Setter
-public class Rider {
+public class Rider extends PublicIdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

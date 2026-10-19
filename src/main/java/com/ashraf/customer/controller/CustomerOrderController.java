@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("api/customer/orders")
 public class CustomerOrderController {
@@ -47,13 +49,13 @@ public class CustomerOrderController {
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> get(@AuthenticationPrincipal CustomUserDetails principal,
-                                             @PathVariable("orderId") Long orderId) {
+                                             @PathVariable("orderId") UUID orderId) {
         return ResponseEntity.ok(orderService.get(principal.getUser(), orderId));
     }
 
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<OrderResponse> cancel(@AuthenticationPrincipal CustomUserDetails principal,
-                                                @PathVariable("orderId") Long orderId,
+                                                @PathVariable("orderId") UUID orderId,
                                                 @Valid @RequestBody(required = false) CancelOrderRequest request) {
         String reason = request != null ? request.reason() : null;
         return ResponseEntity.ok(orderService.cancel(principal.getUser(), orderId, reason));
@@ -61,13 +63,13 @@ public class CustomerOrderController {
 
     @PostMapping("/{orderId}/payment")
     public ResponseEntity<PaymentSession> startPayment(@AuthenticationPrincipal CustomUserDetails principal,
-                                                       @PathVariable("orderId") Long orderId) {
+                                                       @PathVariable("orderId") UUID orderId) {
         return ResponseEntity.ok(customerPaymentService.start(principal.getUser(), orderId));
     }
 
     @PostMapping("/{orderId}/payment/verify")
     public ResponseEntity<OrderResponse> verifyPayment(@AuthenticationPrincipal CustomUserDetails principal,
-                                                       @PathVariable("orderId") Long orderId,
+                                                       @PathVariable("orderId") UUID orderId,
                                                        @Valid @RequestBody VerifyOrderPaymentRequest request) {
         return ResponseEntity.ok(customerPaymentService.confirm(principal.getUser(), orderId, request));
     }

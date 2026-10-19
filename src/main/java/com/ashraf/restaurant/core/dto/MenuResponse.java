@@ -3,10 +3,11 @@ package com.ashraf.restaurant.core.dto;
 import com.ashraf.restaurant.core.entity.Menu;
 import lombok.Getter;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 public class MenuResponse {
-    private final Long id;
+    private final UUID id;
     private final String dishName;
     private final String description;
     private final BigDecimal price;
@@ -16,7 +17,7 @@ public class MenuResponse {
     private final String imageUrl;
 
     public MenuResponse(Menu menu) {
-        this.id = menu.getId();
+        this.id = menu.getPublicId();
         this.dishName = menu.getDishName();
         this.description = menu.getDescription();
         this.price = menu.getPrice();

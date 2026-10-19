@@ -2,10 +2,11 @@ package com.ashraf.customer.dto;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 /** Server-priced preview of a cart. The client never computes money; it only displays this. */
 public record OrderQuoteResponse(
-        Long restaurantId,
+        UUID restaurantId,
         String restaurantName,
         List<Line> lines,
         BigDecimal subtotal,
@@ -18,7 +19,7 @@ public record OrderQuoteResponse(
         int estimatedDeliveryMinutes
 ) {
     public record Line(
-            Long menuId,
+            UUID menuId,
             String dishName,
             String imageUrl,
             String foodType,

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -25,33 +26,27 @@ public class AdminController {
         this.restaurantOnboardingService = restaurantOnboardingService;
     }
 
-    // NOTE: this approves an existing Restaurant row by id. Restaurants registered
-    // through /api/auth/register/restaurant no longer get a Restaurant row until
-    // after onboarding + payment, so this endpoint has no current caller for that
-    // flow. Left in place rather than removed unilaterally — flag if it's dead
-    // weight now, or still wanted for another path (e.g. a future admin-created
-    // restaurant that skips onboarding).
     @PatchMapping("/restaurants/{id}/approve")
-    public ResponseEntity<Map<String, String>> approveRestaurants(@PathVariable("id") Long id) {
+    public ResponseEntity<Map<String, String>> approveRestaurants(@PathVariable("id") UUID id) {
         adminService.approveRestaurants(id);
         return  ResponseEntity.ok(Map.of("message","Successfully approved."));
     }
 
     @PatchMapping("/riders/{id}/approve")
-    public ResponseEntity<Map<String, String>> approveRiders(@PathVariable("id") Long id) {
+    public ResponseEntity<Map<String, String>> approveRiders(@PathVariable("id") UUID id) {
         adminService.approveRiders(id);
         return  ResponseEntity.ok(Map.of("message","Successfully approved."));
     }
 
     @PatchMapping("/restaurant-applications/{id}/approve")
-    public ResponseEntity<Map<String, String>> approveRestaurantApplication(@PathVariable("id") Long id,
+    public ResponseEntity<Map<String, String>> approveRestaurantApplication(@PathVariable("id") UUID id,
                                                                             @AuthenticationPrincipal CustomUserDetails principal) {
         restaurantOnboardingService.approveApplication(id, principal.getUser());
         return ResponseEntity.ok(Map.of("message", "Application approved. Awaiting payment."));
     }
 
     @PatchMapping("/restaurant-applications/{id}/reject")
-    public ResponseEntity<Map<String, String>> rejectRestaurantApplication(@PathVariable("id") Long id,
+    public ResponseEntity<Map<String, String>> rejectRestaurantApplication(@PathVariable("id") UUID id,
                                                                            @Valid @RequestBody RejectApplicationRequest req,
                                                                            @AuthenticationPrincipal CustomUserDetails principal) {
         restaurantOnboardingService.rejectApplication(id, principal.getUser(), req);

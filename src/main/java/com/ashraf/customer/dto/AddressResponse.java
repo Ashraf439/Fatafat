@@ -4,9 +4,11 @@ import com.ashraf.commerce.enums.AddressType;
 import com.ashraf.customer.entity.CustomerAddress;
 import lombok.Getter;
 
+import java.util.UUID;
+
 @Getter
 public class AddressResponse {
-    private final Long id;
+    private final UUID id;
     private final AddressType addressType;
     private final String street;
     private final String landmark;
@@ -17,7 +19,7 @@ public class AddressResponse {
     private final Boolean isDefault;
 
     public AddressResponse(CustomerAddress a) {
-        this.id = a.getId();
+        this.id = a.getPublicId();
         this.addressType = a.getAddressType();
         this.street = a.getStreet();
         this.landmark = a.getLandmark();

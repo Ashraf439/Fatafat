@@ -6,8 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface RestaurantStaffRepository extends JpaRepository<RestaurantStaff, Long> {
+    Optional<RestaurantStaff> findByRestaurant_IdAndUser_PublicId(Long restaurantId, UUID userPublicId);
+
     boolean existsByRestaurant_IdAndUser_IdAndStatus(Long restaurantId, Long userId, StaffStatus status);
 
     List<RestaurantStaff> findByRestaurant_Id(Long restaurantId);

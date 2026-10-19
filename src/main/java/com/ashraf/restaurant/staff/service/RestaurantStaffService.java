@@ -104,7 +104,7 @@ public class RestaurantStaffService {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(requester);
         return restaurantStaffRepository.findByRestaurant_Id(restaurantId).stream()
                 .map(staff -> new StaffResponse(
-                        staff.getUser().getId(),
+                        staff.getUser().getPublicId(),
                         staff.getUser().getEmail(),
                         resolveRoleName(staff.getUser()),
                         staff.getStatus()))
@@ -112,30 +112,31 @@ public class RestaurantStaffService {
     }
 
     @Transactional
-    public void removeStaff(User owner, Long staffUserId) {
+    public void removeStaff(User owner, UUID staffUserId) {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(owner);
         RestaurantStaff staffRow = restaurantStaffRepository
-                .findByRestaurant_IdAndUser_Id(restaurantId, staffUserId)
+                .findByRestaurant_IdAndUser_PublicId(restaurantId, staffUserId)
                 .orElseThrow(() -> new UserDoesNotExistException("Staff not found"));
 
         staffRow.setStatus(StaffStatus.REMOVED);
         restaurantStaffRepository.save(staffRow);
-        userRolesRepository.deleteByUser_Id(staffUserId);
+        userRolesRepository.deleteByUser_Id(staffRow.getUser().getId());
     }
 
     @Transactional
-    public void updateStaffPermission(User owner, Long staffUserId, StaffPermissionRequest request) {
+    public void updateStaffPermission(User owner, UUID staffUserId, StaffPermissionRequest request) {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(owner);
 
-        User targetUser = userRepository.findById(staffUserId)
+        User targetUser = userRepository.findByPublicId(staffUserId)
                 .orElseThrow(() -> new UserDoesNotExistException("Staff not found"));
+
         restaurantAccessService.assertBelongs(targetUser, restaurantId);
 
         Permissions permission = permissionRepository.findByName(request.getPermissionName())
                 .orElseThrow(() -> new PermissionNotFoundException(
                         "Permission not found: " + request.getPermissionName()));
 
-        UserPermissionId id = new UserPermissionId(staffUserId, permission.getId());
+        UserPermissionId id = new UserPermissionId(targetUser.getId(), permission.getId());
         UserPermissions userPermission = userPermissionsRepository.findById(id)
                 .orElseGet(UserPermissions::new);
         userPermission.setId(id);

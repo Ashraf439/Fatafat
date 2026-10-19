@@ -8,10 +8,11 @@ import com.ashraf.restaurant.core.enums.OrderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /** Full order view used by the tracking page and returned when an order is placed. */
 public record OrderResponse(
-        Long id,
+        UUID id,
         String status,
         RestaurantRef restaurant,
         List<OrderItemResponse> items,
@@ -30,7 +31,7 @@ public record OrderResponse(
         boolean cancellable,
         RefundInfo refund                       // null when nothing has been refunded
 ) {
-    public record RestaurantRef(Long id, String name, String imageUrl) {}
+    public record RestaurantRef(UUID id, String name, String imageUrl) {}
 
     public record RefundInfo(BigDecimal amount, String status) {}
 
@@ -45,7 +46,7 @@ public record OrderResponse(
     public static OrderResponse from(Order o) {
         List<OrderItemResponse> lines = o.getItems().stream()
                 .map(i -> new OrderItemResponse(
-                        i.getMenu().getId(),
+                        i.getMenu().getPublicId(),
                         i.getDishNameSnapshot(),
                         i.getQuantity(),
                         i.getPriceAtOrder(),
@@ -54,9 +55,9 @@ public record OrderResponse(
                 .toList();
 
         return new OrderResponse(
-                o.getId(),
+                o.getPublicId(),
                 o.getOrderStatus().name(),
-                new RestaurantRef(o.getRestaurant().getId(), o.getRestaurant().getName(),
+                new RestaurantRef(o.getRestaurant().getPublicId(), o.getRestaurant().getName(),
                         o.getRestaurant().getImageUrl()),
                 lines,
                 o.getSubtotal(), o.getDeliveryFee(), o.getTaxAmount(), o.getDiscountAmount(),

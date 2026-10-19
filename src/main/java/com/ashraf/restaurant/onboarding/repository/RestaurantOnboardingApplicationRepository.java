@@ -8,10 +8,13 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface RestaurantOnboardingApplicationRepository
         extends JpaRepository<RestaurantOnboardingApplication, Long> {
+
+    Optional<RestaurantOnboardingApplication> findByPublicId(UUID publicId);
 
     List<RestaurantOnboardingApplication> findByUser_IdOrderByAttemptNumberDesc(Long userId);
 

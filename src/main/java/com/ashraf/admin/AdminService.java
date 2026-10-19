@@ -12,6 +12,8 @@ import com.ashraf.core.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class AdminService {
     private final UserRepository userRepository;
@@ -25,15 +27,15 @@ public class AdminService {
     }
 
     @Transactional
-    public void approveRestaurants(Long id) {
-        Restaurant restaurant = restaurantRepository.findById(id)
+    public void approveRestaurants(UUID id) {
+        Restaurant restaurant = restaurantRepository.findByPublicId(id)
                 .orElseThrow(() -> new UserDoesNotExistException("Restaurant does not exist."));
         activateUser(restaurant.getOwnerUser());
     }
 
     @Transactional
-    public void approveRiders(Long id) {
-        Rider rider = riderRepository.findById(id)
+    public void approveRiders(UUID id) {
+        Rider rider = riderRepository.findByPublicId(id)
                 .orElseThrow(() -> new UserDoesNotExistException("Rider does not exist."));
         activateUser(rider.getUser());
     }

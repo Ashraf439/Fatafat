@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 /** Public restaurant discovery endpoints (no login required, see SecurityConfig). */
 @RestController
@@ -44,12 +45,12 @@ public class CustomerController {
     }
 
     @GetMapping("/restaurants/{restaurantId}")
-    public ResponseEntity<RestaurantDetailResponse> getRestaurant(@PathVariable("restaurantId") Long restaurantId) {
+    public ResponseEntity<RestaurantDetailResponse> getRestaurant(@PathVariable("restaurantId") UUID restaurantId) {
         return ResponseEntity.ok(discoveryService.getDetail(restaurantId));
     }
 
     @GetMapping("/restaurants/{restaurantId}/menu")
-    public ResponseEntity<CustomerMenuResponse> getMenu(@PathVariable("restaurantId") Long restaurantId) {
+    public ResponseEntity<CustomerMenuResponse> getMenu(@PathVariable("restaurantId") UUID restaurantId) {
         return ResponseEntity.ok(menuService.getMenuForCustomer(restaurantId));
     }
 }
