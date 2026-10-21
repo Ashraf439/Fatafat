@@ -1,5 +1,6 @@
 package com.ashraf.restaurant.core.service;
 
+import com.ashraf.core.service.RestaurantResolver;
 import com.ashraf.restaurant.core.dto.RestaurantDetailResponse;
 import com.ashraf.restaurant.core.dto.RestaurantSummaryResponse;
 import com.ashraf.restaurant.core.dto.TimingSlotResponse;
@@ -37,13 +38,15 @@ public class RestaurantDiscoveryService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantAddressRepository restaurantAddressRepository;
     private final MenuRepository menuRepository;
+    private final RestaurantResolver restaurantResolver;
 
     public RestaurantDiscoveryService(RestaurantRepository restaurantRepository,
                                       RestaurantAddressRepository restaurantAddressRepository,
-                                      MenuRepository menuRepository) {
+                                      MenuRepository menuRepository, RestaurantResolver restaurantResolver) {
         this.restaurantRepository = restaurantRepository;
         this.restaurantAddressRepository = restaurantAddressRepository;
         this.menuRepository = menuRepository;
+        this.restaurantResolver = restaurantResolver;
     }
 
     @Transactional(readOnly = true)
@@ -73,10 +76,10 @@ public class RestaurantDiscoveryService {
     }
 
     @Transactional(readOnly = true)
-    public RestaurantDetailResponse getDetail(UUID publicId) {
-        Restaurant r = restaurantRepository.findByPublicId(publicId)
+    public RestaurantDetailResponse getDetail(String ref) {
+        Restaurant r = restaurantResolver.find(ref)
                 .filter(x -> x.getRestaurantOnboardingStatus() == RestaurantOnboardingStatus.LIVE)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found: " + publicId));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         Long restaurantId = r.getId();
 
@@ -104,7 +107,7 @@ public class RestaurantDiscoveryService {
     private RestaurantSummaryResponse toSummary(Restaurant r, RestaurantAddress address,
                                                 RestaurantMenuStats stats) {
         return new RestaurantSummaryResponse(
-                r.getPublicId(), r.getName(), r.getIsOpen(),
+                r.getPublicId(),r.getSlug(), r.getName(), r.getIsOpen(),
                 address != null ? address.getStreet() : null,
                 address != null ? address.getCity() : null,
                 r.getImageUrl(),

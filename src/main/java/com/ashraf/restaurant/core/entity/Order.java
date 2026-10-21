@@ -40,6 +40,10 @@ public class Order extends PublicIdEntity {
     private OrderStatus orderStatus = OrderStatus.PLACED;
 
     private LocalDateTime orderDate;
+
+    @Column(name = "order_number")
+    private Integer orderNumber;
+
     private BigDecimal totalAmount;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

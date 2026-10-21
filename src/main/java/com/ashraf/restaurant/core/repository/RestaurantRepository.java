@@ -18,6 +18,8 @@ import java.util.UUID;
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     Optional<Restaurant> findByPublicId(UUID publicId);
 
+    Optional<Restaurant> findBySlug(String slug);
+
     boolean existsByIdAndOwnerUser_Id(Long id, Long ownerUserId);
 
     List<Restaurant> findByOwnerUser_Status(Status status);

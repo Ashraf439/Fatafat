@@ -11,6 +11,7 @@ import java.util.UUID;
 /** Row in the order-history list. */
 public record OrderSummaryResponse(
         UUID id,
+        Integer orderNumber,
         String status,
         Long restaurantId,
         String restaurantName,
@@ -31,6 +32,7 @@ public record OrderSummaryResponse(
                 .toList();
         return new OrderSummaryResponse(
                 o.getPublicId(),
+                o.getOrderNumber(),
                 o.getOrderStatus().name(),
                 o.getRestaurant().getId(),
                 o.getRestaurant().getName(),

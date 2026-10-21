@@ -13,6 +13,7 @@ import java.util.UUID;
 /** Full order view used by the tracking page and returned when an order is placed. */
 public record OrderResponse(
         UUID id,
+        Integer orderNumber,
         String status,
         RestaurantRef restaurant,
         List<OrderItemResponse> items,
@@ -56,6 +57,7 @@ public record OrderResponse(
 
         return new OrderResponse(
                 o.getPublicId(),
+                o.getOrderNumber(),
                 o.getOrderStatus().name(),
                 new RestaurantRef(o.getRestaurant().getPublicId(), o.getRestaurant().getName(),
                         o.getRestaurant().getImageUrl()),

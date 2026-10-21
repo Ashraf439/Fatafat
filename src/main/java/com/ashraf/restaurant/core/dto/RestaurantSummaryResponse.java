@@ -9,6 +9,7 @@ import java.util.UUID;
 @Getter
 public class RestaurantSummaryResponse {
     private final UUID id;
+    private final String slug;
     private final String name;
     private final Boolean isOpen;
     private final String street;
@@ -19,11 +20,12 @@ public class RestaurantSummaryResponse {
     private final Integer avgPrepTimeMinutes;
     private final Boolean pureVeg;
 
-    public RestaurantSummaryResponse(UUID id, String name, Boolean isOpen,
+    public RestaurantSummaryResponse(UUID id, String slug, String name, Boolean isOpen,
                                      String street, String city, String imageUrl,
                                      Integer menuItemCount, BigDecimal startingPrice,
                                      Integer avgPrepTimeMinutes, Boolean pureVeg) {
         this.id = id;
+        this.slug = slug;
         this.name = name;
         this.isOpen = isOpen;
         this.street = street;

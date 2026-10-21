@@ -129,6 +129,7 @@ public class RestaurantOrderService {
 
         return new RestaurantOrderResponse(
                 o.getPublicId(),
+                o.getOrderNumber(),
                 s.name(),
                 o.getOrderDate() != null ? o.getOrderDate() : o.getCreatedAt(),
                 o.getEstimatedDeliveryTime(),

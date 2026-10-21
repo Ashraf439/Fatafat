@@ -4,6 +4,7 @@ import com.ashraf.commerce.entity.BankDetails;
 import com.ashraf.core.entity.User;
 import com.ashraf.restaurant.onboarding.enums.RestaurantOnboardingStatus;
 import com.ashraf.shared.entity.PublicIdEntity;
+import com.ashraf.shared.utils.Slugs;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,9 @@ public class Restaurant extends PublicIdEntity {
     private User ownerUser;
 
     private String name;
+
+    @Column(name = "slug", unique = true, updatable = false)
+    private String slug;
 
     private String ownerName;
 
@@ -64,4 +68,11 @@ public class Restaurant extends PublicIdEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RestaurantOnboardingStatus restaurantOnboardingStatus;
+
+    @Override
+    protected void onPublicIdAssigned() {
+        if (slug == null) {
+            slug = Slugs.forRestaurant(name, getPublicId());
+        }
+    }
 }

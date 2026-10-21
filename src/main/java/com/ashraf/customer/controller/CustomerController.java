@@ -7,16 +7,10 @@ import com.ashraf.restaurant.core.service.MenuService;
 import com.ashraf.restaurant.core.service.RestaurantDiscoveryService;
 import com.ashraf.shared.dto.PageResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
-/** Public restaurant discovery endpoints (no login required, see SecurityConfig). */
 @RestController
 @RequestMapping("api/customer")
 public class CustomerController {
@@ -45,12 +39,12 @@ public class CustomerController {
     }
 
     @GetMapping("/restaurants/{restaurantId}")
-    public ResponseEntity<RestaurantDetailResponse> getRestaurant(@PathVariable("restaurantId") UUID restaurantId) {
+    public ResponseEntity<RestaurantDetailResponse> getRestaurant(@PathVariable("restaurantId") String restaurantId) {
         return ResponseEntity.ok(discoveryService.getDetail(restaurantId));
     }
 
     @GetMapping("/restaurants/{restaurantId}/menu")
-    public ResponseEntity<CustomerMenuResponse> getMenu(@PathVariable("restaurantId") UUID restaurantId) {
+    public ResponseEntity<CustomerMenuResponse> getMenu(@PathVariable("restaurantId") String restaurantId) {
         return ResponseEntity.ok(menuService.getMenuForCustomer(restaurantId));
     }
 }

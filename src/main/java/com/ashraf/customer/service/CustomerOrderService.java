@@ -16,6 +16,7 @@ import com.ashraf.restaurant.core.enums.OrderStatus;
 import com.ashraf.restaurant.core.repository.MenuRepository;
 import com.ashraf.restaurant.core.repository.OrderRepository;
 import com.ashraf.restaurant.core.repository.RestaurantRepository;
+import com.ashraf.restaurant.core.service.OrderNumberService;
 import com.ashraf.restaurant.onboarding.enums.RestaurantOnboardingStatus;
 import com.ashraf.shared.dto.PageResponse;
 import com.ashraf.shared.exception.BusinessRuleException;
@@ -49,6 +50,7 @@ public class CustomerOrderService {
     private final OrderPricingService pricing;
     private final OrderPricingProperties props;
     private final RefundService refundService;
+    private final OrderNumberService orderNumberService;
 
     public CustomerOrderService(OrderRepository orderRepository,
                                 RestaurantRepository restaurantRepository,
@@ -56,7 +58,7 @@ public class CustomerOrderService {
                                 CustomerLookupService customerLookup,
                                 CustomerAddressService addressService,
                                 OrderPricingService pricing,
-                                OrderPricingProperties props, RefundService refundService) {
+                                OrderPricingProperties props, RefundService refundService, OrderNumberService orderNumberService) {
         this.orderRepository = orderRepository;
         this.restaurantRepository = restaurantRepository;
         this.menuRepository = menuRepository;
@@ -65,6 +67,7 @@ public class CustomerOrderService {
         this.pricing = pricing;
         this.props = props;
         this.refundService = refundService;
+        this.orderNumberService = orderNumberService;
     }
 
     // ---- quote ---------------------------------------------------------------------------
@@ -118,6 +121,7 @@ public class CustomerOrderService {
         LocalDateTime now = LocalDateTime.now();
 
         Order order = new Order();
+        order.setOrderNumber(orderNumberService.next(cart.restaurant().getId()));
         order.setCustomer(customer);
         order.setRestaurant(cart.restaurant());
         order.setDeliveryAddress(address);

@@ -1,6 +1,7 @@
 package com.ashraf.restaurant.core.service;
 
 import com.ashraf.core.entity.User;
+import com.ashraf.core.service.RestaurantResolver;
 import com.ashraf.restaurant.core.dto.CustomerMenuResponse;
 import com.ashraf.restaurant.core.dto.MenuCsvRow;
 import com.ashraf.restaurant.core.dto.MenuResponse;
@@ -32,15 +33,17 @@ public class MenuService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantAccessService restaurantAccessService;
     private final ImageStorageService imageStorageService;
+    private final RestaurantResolver restaurantResolver;
 
     public MenuService(MenuRepository menuRepository,
                        RestaurantRepository restaurantRepository,
                        RestaurantAccessService restaurantAccessService,
-                       ImageStorageService imageStorageService) {
+                       ImageStorageService imageStorageService, RestaurantResolver restaurantResolver) {
         this.menuRepository = menuRepository;
         this.restaurantRepository = restaurantRepository;
         this.restaurantAccessService = restaurantAccessService;
         this.imageStorageService = imageStorageService;
+        this.restaurantResolver = restaurantResolver;
     }
 
     @Transactional
@@ -159,8 +162,8 @@ public class MenuService {
     }
 
     @Transactional(readOnly = true)
-    public CustomerMenuResponse getMenuForCustomer(UUID publicId) {
-        Restaurant restaurant = restaurantRepository.findByPublicId(publicId)
+    public CustomerMenuResponse getMenuForCustomer(String ref) {
+        Restaurant restaurant = restaurantResolver.find(ref)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found "));
 
         Long restaurantId = restaurant.getId();

@@ -10,6 +10,7 @@ import java.util.UUID;
 /** An order as the restaurant sees it. Contact details stay hidden until the order has been accepted. */
 public record RestaurantOrderResponse(
         UUID id,
+        Integer orderNumber,
         String status,
         LocalDateTime placedAt,
         LocalDateTime estimatedDeliveryTime,
