@@ -5,6 +5,7 @@ import com.ashraf.customer.security.CustomUserDetails;
 import com.ashraf.customer.service.CustomerOrderService;
 import com.ashraf.customer.service.CustomerPaymentService;
 import com.ashraf.customer.service.CustomerPaymentService.PaymentSession;
+import com.ashraf.customer.service.InvoiceService;
 import com.ashraf.payment.dto.VerifyOrderPaymentRequest;
 import com.ashraf.shared.dto.PageResponse;
 import jakarta.validation.Valid;
@@ -21,11 +22,13 @@ public class CustomerOrderController {
 
     private final CustomerOrderService orderService;
     private final CustomerPaymentService customerPaymentService;
+    private final InvoiceService invoiceService;
 
     public CustomerOrderController(CustomerOrderService orderService,
-                                   CustomerPaymentService customerPaymentService) {
+                                   CustomerPaymentService customerPaymentService, InvoiceService invoiceService) {
         this.orderService = orderService;
         this.customerPaymentService = customerPaymentService;
+        this.invoiceService = invoiceService;
     }
 
     @PostMapping("/quote")
@@ -78,4 +81,15 @@ public class CustomerOrderController {
                                                        @Valid @RequestBody VerifyOrderPaymentRequest request) {
         return ResponseEntity.ok(customerPaymentService.confirm(principal.getUser(), orderId, request));
     }
+
+    @GetMapping("/{orderId}/invoice")
+    public ResponseEntity<byte[]> invoice(@AuthenticationPrincipal CustomUserDetails principal,
+                                          @PathVariable UUID orderId) {
+        byte[] pdf = invoiceService.generate(principal.getUser(), orderId);
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/pdf")
+                .header("Content-Disposition", "inline; filename=invoice-" + orderId + ".pdf")
+                .body(pdf);
+    }
+
 }
