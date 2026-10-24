@@ -43,8 +43,13 @@ public class CustomerOrderController {
     public ResponseEntity<PageResponse<OrderSummaryResponse>> list(
             @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size) {
-        return ResponseEntity.ok(orderService.list(principal.getUser(), page, size));
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sort", defaultValue = "date_desc") String sort,
+            @RequestParam(name = "from", required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate from,
+            @RequestParam(name = "to", required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate to) {
+        return ResponseEntity.ok(orderService.list(principal.getUser(), page, size, sort, from, to));
     }
 
     @GetMapping("/{orderId}")
