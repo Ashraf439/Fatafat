@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/restaurant")
@@ -138,5 +139,12 @@ public class RestaurantController {
             throw new AccessDeniedException("No access");
         }
         return ResponseEntity.ok(menuService.updateMenuItemImage(principal.getUser(), menuId, file));
+    }
+
+    @GetMapping("/me/permissions")
+    public ResponseEntity<Map<String, Boolean>> myPermissions(@AuthenticationPrincipal CustomUserDetails principal) {
+        List<String> checks = List.of("MENU_ITEM_ADD", "RESTAURANT_EDIT", "STAFF_ADD", "STAFF_REMOVE", "STAFF_MANAGE_PERMISSIONS");
+        return ResponseEntity.ok(checks.stream()
+                .collect(Collectors.toMap(p -> p, p -> permissionService.hasPermission(principal.getUser().getId(), p))));
     }
 }
