@@ -99,6 +99,8 @@ public class RestaurantDiscoveryService {
                 address != null ? address.getCity() : null,
                 address != null ? address.getState() : null,
                 address != null ? address.getPincode() : null,
+                address != null ? address.getLatitude() : null,
+                address != null ? address.getLongitude() : null,
                 timings,
                 itemCount(stats), startingPrice(stats), avgPrep(stats), pureVeg(stats));
     }

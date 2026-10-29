@@ -5,7 +5,11 @@ import com.ashraf.restaurant.core.enums.OrderStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -14,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface OrderRepository extends JpaRepository<Order, Long> , JpaSpecificationExecutor<Order> {
+public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
 
     @EntityGraph(attributePaths = {"restaurant"})
     Page<Order> findByCustomer_IdOrderByCreatedAtDesc(Long customerId, Pageable pageable);
@@ -37,19 +41,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> , JpaSpecifi
     List<Long> findIdsByStatusCreatedBefore(@Param("status") OrderStatus status,
                                             @Param("cutoff") LocalDateTime cutoff);
 
-
-    /** The kitchen queue, oldest first so the longest-waiting order is always on top. */
     @EntityGraph(attributePaths = {"customer", "deliveryAddress", "items"})
     @Query("select o from Order o where o.restaurant.id = :restaurantId and o.orderStatus in :statuses " +
             "order by o.createdAt asc")
     List<Order> findQueueForRestaurant(@Param("restaurantId") Long restaurantId,
                                        @Param("statuses") Collection<OrderStatus> statuses);
 
-    /** Finished orders, newest first (limit via Pageable). */
     List<Order> findByRestaurant_IdAndOrderStatusInOrderByCreatedAtDesc(
             Long restaurantId, Collection<OrderStatus> statuses, Pageable pageable);
 
-    /** PLACED orders nobody has touched since {@code cutoff}: updatedAt is when they became PLACED. */
     @Query("select o.id from Order o where o.orderStatus = :status and o.updatedAt < :cutoff")
     List<Long> findIdsByStatusUpdatedBefore(@Param("status") OrderStatus status,
                                             @Param("cutoff") LocalDateTime cutoff);

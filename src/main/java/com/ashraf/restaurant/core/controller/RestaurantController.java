@@ -3,6 +3,8 @@ package com.ashraf.restaurant.core.controller;
 import com.ashraf.core.service.PermissionService;
 import com.ashraf.customer.security.CustomUserDetails;
 import com.ashraf.restaurant.core.dto.MenuResponse;
+import com.ashraf.restaurant.core.dto.RestaurantProfileResponse;
+import com.ashraf.restaurant.core.dto.RestaurantProfileUpdateRequest;
 import com.ashraf.restaurant.core.dto.TimingSlotRequest;
 import com.ashraf.restaurant.core.dto.TimingSlotResponse;
 import com.ashraf.restaurant.core.entity.Menu;
@@ -20,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/restaurant")
@@ -77,8 +78,6 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantTimingsService.getTimings(principal.getUser()));
     }
 
-    // Full replace of the weekly schedule: send every shift you want to keep,
-    // any day left out is treated as closed.
     @PutMapping("/timings")
     public ResponseEntity<List<TimingSlotResponse>> setTimings(@RequestBody List<TimingSlotRequest> slots,
                                                                @AuthenticationPrincipal CustomUserDetails principal) {
@@ -88,7 +87,6 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantTimingsService.replaceTimings(principal.getUser(), slots));
     }
 
-    // Add a single shift without resending the whole week.
     @PostMapping("/timings")
     public ResponseEntity<TimingSlotResponse> addTiming(@RequestBody TimingSlotRequest slot,
                                                         @AuthenticationPrincipal CustomUserDetails principal) {
@@ -99,7 +97,6 @@ public class RestaurantController {
                 .body(restaurantTimingsService.addTiming(principal.getUser(), slot));
     }
 
-    // Edit a single existing shift by its own id.
     @PatchMapping("/timings/{timingId}")
     public ResponseEntity<TimingSlotResponse> updateTiming(@PathVariable UUID timingId,
                                                            @RequestBody TimingSlotRequest slot,
@@ -110,7 +107,6 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantTimingsService.updateTiming(principal.getUser(), timingId, slot));
     }
 
-    // Remove a single shift.
     @DeleteMapping("/timings/{timingId}")
     public ResponseEntity<Void> deleteTiming(@PathVariable UUID timingId,
                                              @AuthenticationPrincipal CustomUserDetails principal) {
@@ -141,10 +137,35 @@ public class RestaurantController {
         return ResponseEntity.ok(menuService.updateMenuItemImage(principal.getUser(), menuId, file));
     }
 
+    @GetMapping("/me/profile")
+    public ResponseEntity<RestaurantProfileResponse> myProfile(@AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(restaurantService.getMyProfile(principal.getUser()));
+    }
+
+    @PatchMapping("/me/profile")
+    public ResponseEntity<RestaurantProfileResponse> updateMyProfile(
+            @RequestBody RestaurantProfileUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        if (!permissionService.hasPermission(principal.getUser().getId(), "RESTAURANT_EDIT")) {
+            throw new AccessDeniedException("No access");
+        }
+        return ResponseEntity.ok(restaurantService.updateProfile(principal.getUser(), request));
+    }
+
     @GetMapping("/me/permissions")
     public ResponseEntity<Map<String, Boolean>> myPermissions(@AuthenticationPrincipal CustomUserDetails principal) {
-        List<String> checks = List.of("MENU_ITEM_ADD", "RESTAURANT_EDIT", "STAFF_ADD", "STAFF_REMOVE", "STAFF_MANAGE_PERMISSIONS");
-        return ResponseEntity.ok(checks.stream()
-                .collect(Collectors.toMap(p -> p, p -> permissionService.hasPermission(principal.getUser().getId(), p))));
+        List<String> checks = List.of(
+                "MENU_ITEM_ADD",
+                "RESTAURANT_EDIT",
+                "STAFF_ADD",
+                "STAFF_REMOVE",
+                "STAFF_MANAGE_PERMISSIONS"
+        );
+        Long userId = principal.getUser().getId();
+        Map<String, Boolean> result = new java.util.LinkedHashMap<>();
+        for (String permission : checks) {
+            result.put(permission, permissionService.hasPermission(userId, permission));
+        }
+        return ResponseEntity.ok(result);
     }
 }

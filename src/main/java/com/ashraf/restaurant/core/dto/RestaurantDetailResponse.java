@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-/** Header data for a restaurant page: identity, address, opening hours and menu stats. */
 @Getter
 public class RestaurantDetailResponse {
     private final UUID id;
@@ -18,6 +17,8 @@ public class RestaurantDetailResponse {
     private final String city;
     private final String state;
     private final String pincode;
+    private final BigDecimal latitude;
+    private final BigDecimal longitude;
     private final List<TimingSlotResponse> timings;
     private final Integer menuItemCount;
     private final BigDecimal startingPrice;
@@ -26,7 +27,8 @@ public class RestaurantDetailResponse {
 
     public RestaurantDetailResponse(UUID id, String name, Boolean isOpen, String imageUrl,
                                     String street, String landmark, String city, String state,
-                                    String pincode, List<TimingSlotResponse> timings,
+                                    String pincode, BigDecimal latitude, BigDecimal longitude,
+                                    List<TimingSlotResponse> timings,
                                     Integer menuItemCount, BigDecimal startingPrice,
                                     Integer avgPrepTimeMinutes, Boolean pureVeg) {
         this.id = id;
@@ -38,6 +40,8 @@ public class RestaurantDetailResponse {
         this.city = city;
         this.state = state;
         this.pincode = pincode;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.timings = timings;
         this.menuItemCount = menuItemCount;
         this.startingPrice = startingPrice;

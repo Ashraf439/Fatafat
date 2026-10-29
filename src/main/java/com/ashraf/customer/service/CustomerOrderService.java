@@ -23,13 +23,10 @@ import com.ashraf.shared.exception.BusinessRuleException;
 import com.ashraf.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -162,18 +159,18 @@ public class CustomerOrderService {
 
     @Transactional(readOnly = true)
     public PageResponse<OrderSummaryResponse> list(User user, int page, int size,
-                                                   String sort, LocalDate from, LocalDate to) {
+                                                   String sort, java.time.LocalDate from, java.time.LocalDate to) {
         Customer customer = customerLookup.requireCustomer(user);
         int safeSize = size <= 0 ? DEFAULT_PAGE_SIZE : Math.min(size, MAX_PAGE_SIZE);
 
-        Sort sortBy = switch (sort == null ? "date_desc" : sort) {
-            case "date_asc"   -> Sort.by("createdAt").ascending();
-            case "name_asc"   -> Sort.by("restaurant.name").ascending();
-            case "name_desc"  -> Sort.by("restaurant.name").descending();
-            default           -> Sort.by("createdAt").descending(); // date_desc
+        org.springframework.data.domain.Sort sortBy = switch (sort == null ? "date_desc" : sort) {
+            case "date_asc" -> org.springframework.data.domain.Sort.by("createdAt").ascending();
+            case "name_asc" -> org.springframework.data.domain.Sort.by("restaurant.name").ascending();
+            case "name_desc" -> org.springframework.data.domain.Sort.by("restaurant.name").descending();
+            default -> org.springframework.data.domain.Sort.by("createdAt").descending(); // date_desc
         };
 
-        Specification<Order> spec = OrderSpecs.and(
+        org.springframework.data.jpa.domain.Specification<Order> spec = OrderSpecs.and(
                 OrderSpecs.forCustomer(customer.getId()),
                 OrderSpecs.placedFrom(from),
                 OrderSpecs.placedTo(to));
