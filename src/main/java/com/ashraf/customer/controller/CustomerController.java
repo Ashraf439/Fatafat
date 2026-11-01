@@ -1,5 +1,9 @@
 package com.ashraf.customer.controller;
 
+import com.ashraf.customer.dto.CustomerProfileResponse;
+import com.ashraf.customer.dto.CustomerProfileUpdateRequest;
+import com.ashraf.customer.security.CustomUserDetails;
+import com.ashraf.customer.service.CustomerProfileService;
 import com.ashraf.restaurant.core.dto.CustomerMenuResponse;
 import com.ashraf.restaurant.core.dto.RestaurantDetailResponse;
 import com.ashraf.restaurant.core.dto.RestaurantSummaryResponse;
@@ -7,6 +11,7 @@ import com.ashraf.restaurant.core.service.MenuService;
 import com.ashraf.restaurant.core.service.RestaurantDiscoveryService;
 import com.ashraf.shared.dto.PageResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,10 +21,25 @@ import java.util.List;
 public class CustomerController {
     private final MenuService menuService;
     private final RestaurantDiscoveryService discoveryService;
+    private final CustomerProfileService customerProfileService;
 
-    public CustomerController(MenuService menuService, RestaurantDiscoveryService discoveryService) {
+    public CustomerController(MenuService menuService, RestaurantDiscoveryService discoveryService,
+                              CustomerProfileService customerProfileService) {
         this.menuService = menuService;
         this.discoveryService = discoveryService;
+        this.customerProfileService = customerProfileService;
+    }
+
+    @GetMapping("/me/profile")
+    public ResponseEntity<CustomerProfileResponse> myProfile(@AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(customerProfileService.getMyProfile(principal.getUser()));
+    }
+
+    @PatchMapping("/me/profile")
+    public ResponseEntity<CustomerProfileResponse> updateMyProfile(
+            @RequestBody CustomerProfileUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(customerProfileService.updateProfile(principal.getUser(), request));
     }
 
     @GetMapping("/restaurants")

@@ -1,5 +1,6 @@
 package com.ashraf.admin;
 
+import com.ashraf.admin.dto.AdminProfileResponse;
 import com.ashraf.customer.security.CustomUserDetails;
 import com.ashraf.restaurant.onboarding.dto.ApplicationSummaryResponse;
 import com.ashraf.restaurant.onboarding.dto.RejectApplicationRequest;
@@ -56,5 +57,10 @@ public class AdminController {
     public ResponseEntity<List<ApplicationSummaryResponse>> listApplications(
             @RequestParam(required = false) RestaurantOnboardingStatus status) {
         return ResponseEntity.ok(restaurantOnboardingService.listApplications(status));
+    }
+
+    @GetMapping("/me/profile")
+    public ResponseEntity<AdminProfileResponse> myProfile(@AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(adminService.getMyProfile(principal.getUser()));
     }
 }
