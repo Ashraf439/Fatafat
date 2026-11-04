@@ -24,7 +24,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     List<Restaurant> findByOwnerUser_Status(Status status);
 
-    Optional<Restaurant> findByOwnerUser_Id(Long ownerUserId);
+    /** An owner can now have more than one restaurant — ordered so "the first one" is stable. */
+    List<Restaurant> findAllByOwnerUser_IdOrderByIdAsc(Long ownerUserId);
 
     boolean existsByOwnerUser_Id(Long ownerUserId);
 

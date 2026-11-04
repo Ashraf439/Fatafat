@@ -244,7 +244,8 @@ public class DemoDataSeeder implements CommandLineRunner {
     private Persisted loadExisting(RestaurantBlueprint bp) {
         Optional<User> owner = userRepository.findByEmail(bp.ownerEmail());
         if (owner.isEmpty()) return null;
-        Restaurant r = restaurantRepository.findByOwnerUser_Id(owner.get().getId())
+        Restaurant r = restaurantRepository.findAllByOwnerUser_IdOrderByIdAsc(owner.get().getId())
+                .stream().findFirst()
                 .orElseThrow(() -> new IllegalStateException("User " + bp.ownerEmail()
                         + " exists but has no restaurant; delete that user and re-run"));
         Map<String, Long> ids = new HashMap<>();

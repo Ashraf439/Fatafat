@@ -28,4 +28,7 @@ public interface RestaurantOnboardingApplicationRepository
     Optional<RestaurantOnboardingApplication> findFirstByUser_IdOrderByAttemptNumberDesc(Long userId);
 
     boolean existsByUser_IdAndStatusIn(Long userId, Collection<RestaurantOnboardingStatus> statuses);
+
+    /** How many of this owner's restaurants/applications currently occupy a quota slot (REJECTED excluded). */
+    long countByUser_IdAndStatusIn(Long userId, Collection<RestaurantOnboardingStatus> statuses);
 }

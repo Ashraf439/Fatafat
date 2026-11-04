@@ -3,6 +3,7 @@ package com.ashraf.restaurant.onboarding.controller;
 import com.ashraf.customer.security.CustomUserDetails;
 import com.ashraf.payment.OrderResult;
 import com.ashraf.restaurant.onboarding.dto.ApplicationSummaryResponse;
+import com.ashraf.restaurant.onboarding.dto.OwnerEntitlementResponse;
 import com.ashraf.restaurant.onboarding.dto.RestaurantOnboardingApplicationRequest;
 import com.ashraf.restaurant.onboarding.service.RestaurantOnboardingService;
 import com.razorpay.RazorpayException;
@@ -65,6 +66,18 @@ public class RestaurantOnboardingController {
                 .orElse(
                         ResponseEntity.noContent().build()
                 );
+    }
+
+
+    // ---------------------------------------------------------
+    // ENTITLEMENT (paid / quota / used) — powers the "Add restaurant" UI
+    // ---------------------------------------------------------
+
+    @GetMapping("/entitlement")
+    public ResponseEntity<OwnerEntitlementResponse> getEntitlement(
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        return ResponseEntity.ok(onboardingService.getEntitlement(principal.getUser()));
     }
 
 

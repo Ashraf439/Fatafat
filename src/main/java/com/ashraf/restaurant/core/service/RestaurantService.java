@@ -1,6 +1,7 @@
 package com.ashraf.restaurant.core.service;
 
 import com.ashraf.core.entity.User;
+import com.ashraf.restaurant.core.dto.OwnedRestaurantResponse;
 import com.ashraf.restaurant.core.dto.RestaurantProfileResponse;
 import com.ashraf.restaurant.core.dto.RestaurantProfileUpdateRequest;
 import com.ashraf.restaurant.core.entity.Restaurant;
@@ -10,6 +11,8 @@ import com.ashraf.shared.storage.ImageStorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @Service
@@ -25,6 +28,20 @@ public class RestaurantService {
         this.restaurantRepository = restaurantRepository;
         this.restaurantAccessService = restaurantAccessService;
         this.imageStorageService = imageStorageService;
+    }
+
+    /** Every restaurant this account can manage, for the restaurant switcher. */
+    @Transactional(readOnly = true)
+    public List<OwnedRestaurantResponse> listMine(User user) {
+        return restaurantAccessService.listRestaurantsForUser(user).stream()
+                .map(r -> new OwnedRestaurantResponse(
+                        r.getPublicId(),
+                        r.getName(),
+                        r.getAddresses().stream().findFirst().map(RestaurantAddress::getCity).orElse(null),
+                        Boolean.TRUE.equals(r.getIsOpen()),
+                        r.getRestaurantOnboardingStatus(),
+                        restaurantAccessService.isOwner(user, r.getId())))
+                .toList();
     }
 
     @Transactional(readOnly = true)

@@ -3,6 +3,7 @@ package com.ashraf.restaurant.core.controller;
 import com.ashraf.core.service.PermissionService;
 import com.ashraf.customer.security.CustomUserDetails;
 import com.ashraf.restaurant.core.dto.MenuResponse;
+import com.ashraf.restaurant.core.dto.OwnedRestaurantResponse;
 import com.ashraf.restaurant.core.dto.RestaurantProfileResponse;
 import com.ashraf.restaurant.core.dto.RestaurantProfileUpdateRequest;
 import com.ashraf.restaurant.core.dto.TimingSlotRequest;
@@ -69,6 +70,9 @@ public class RestaurantController {
 
     @PatchMapping("/status")
     public ResponseEntity<Map<String, Boolean>> toggleStatus(@AuthenticationPrincipal CustomUserDetails principal) {
+        if (!permissionService.hasPermission(principal.getUser().getId(), "RESTAURANT_EDIT")) {
+            throw new AccessDeniedException("No access");
+        }
         boolean isOpen = restaurantService.toggleStatus(principal.getUser());
         return ResponseEntity.ok(Map.of("isOpen", isOpen));
     }
@@ -135,6 +139,12 @@ public class RestaurantController {
             throw new AccessDeniedException("No access");
         }
         return ResponseEntity.ok(menuService.updateMenuItemImage(principal.getUser(), menuId, file));
+    }
+
+    /** Every restaurant this account can manage (an owner may have several) — powers the restaurant switcher. */
+    @GetMapping("/mine")
+    public ResponseEntity<List<OwnedRestaurantResponse>> listMine(@AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(restaurantService.listMine(principal.getUser()));
     }
 
     @GetMapping("/me/profile")

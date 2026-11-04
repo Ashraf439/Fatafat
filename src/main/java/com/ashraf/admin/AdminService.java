@@ -51,6 +51,7 @@ public class AdminService {
         userRepository.save(user);
     }
 
+    /** View-only: admins are created manually, so there's no self-service profile edit. */
     public AdminProfileResponse getMyProfile(User user) {
         return toProfileResponse(user);
     }

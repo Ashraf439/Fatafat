@@ -42,8 +42,11 @@ public class AdminController {
     @PatchMapping("/restaurant-applications/{id}/approve")
     public ResponseEntity<Map<String, String>> approveRestaurantApplication(@PathVariable("id") UUID id,
                                                                             @AuthenticationPrincipal CustomUserDetails principal) {
-        restaurantOnboardingService.approveApplication(id, principal.getUser());
-        return ResponseEntity.ok(Map.of("message", "Application approved. Awaiting payment."));
+        var application = restaurantOnboardingService.approveApplication(id, principal.getUser());
+        String message = application.getStatus() == RestaurantOnboardingStatus.LIVE
+                ? "Application approved. Restaurant is now live (owner already paid the onboarding fee)."
+                : "Application approved. Awaiting payment.";
+        return ResponseEntity.ok(Map.of("message", message));
     }
 
     @PatchMapping("/restaurant-applications/{id}/reject")
@@ -59,6 +62,7 @@ public class AdminController {
         return ResponseEntity.ok(restaurantOnboardingService.listApplications(status));
     }
 
+    /** View-only — admins are added manually, so there's no self-service edit here. */
     @GetMapping("/me/profile")
     public ResponseEntity<AdminProfileResponse> myProfile(@AuthenticationPrincipal CustomUserDetails principal) {
         return ResponseEntity.ok(adminService.getMyProfile(principal.getUser()));

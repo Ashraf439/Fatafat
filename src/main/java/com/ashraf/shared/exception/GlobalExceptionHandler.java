@@ -40,6 +40,29 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
+    // A request that doesn't match the current application/payment state (e.g. trying to pay
+    // twice, or acting on an application that isn't in the expected status). Previously
+    // unmapped — it fell through to the generic 500 handler below.
+    @ExceptionHandler(InvalidApplicationStateException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidApplicationState(InvalidApplicationStateException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ApplicationAlreadyActiveException.class)
+    public ResponseEntity<Map<String, String>> handleApplicationAlreadyActive(ApplicationAlreadyActiveException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(RestaurantQuotaExceededException.class)
+    public ResponseEntity<Map<String, String>> handleQuotaExceeded(RestaurantQuotaExceededException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(OnboardingFeeAlreadyPaidException.class)
+    public ResponseEntity<Map<String, String>> handleFeeAlreadyPaid(OnboardingFeeAlreadyPaidException ex) {
+        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleInvalidCreds(InvalidCredentialsException ex) {
         return buildResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);

@@ -34,6 +34,11 @@ public class User extends PublicIdEntity {
     @Column(nullable = false)
     private String passwordHash;
 
+    private LocalDateTime onboardingFeePaidAt;
+
+    @Column(nullable = false)
+    private Integer restaurantQuota = 0;
+
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 

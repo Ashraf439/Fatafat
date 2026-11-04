@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+/** Admins have no sub-entity — their display name lives directly on User.name (set manually). */
 @Component
 public class AdminAccountNameResolver implements AccountNameResolver {
     @Override

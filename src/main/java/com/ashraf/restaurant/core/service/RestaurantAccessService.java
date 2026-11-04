@@ -1,6 +1,7 @@
 package com.ashraf.restaurant.core.service;
 
 import com.ashraf.core.entity.User;
+import com.ashraf.restaurant.core.context.RestaurantContext;
 import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.restaurant.core.repository.RestaurantRepository;
 import com.ashraf.restaurant.staff.entity.RestaurantStaff;
@@ -10,7 +11,9 @@ import com.ashraf.shared.exception.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RestaurantAccessService {
@@ -24,16 +27,56 @@ public class RestaurantAccessService {
         this.restaurantStaffRepository = restaurantStaffRepository;
     }
 
-    /** Restaurant the user owns, or works at as ACTIVE staff. Empty if neither. */
+    /**
+     * Restaurant the user is currently managing. An owner can have several restaurants, so this
+     * honors the X-Restaurant-Id header (via RestaurantContext) when it names one the user actually
+     * has access to; otherwise it falls back to their first owned restaurant, or the one they work
+     * at as ACTIVE staff. Empty only if the user has no restaurant at all.
+     */
     @Transactional(readOnly = true)
     public Optional<Restaurant> findRestaurantForUser(User user) {
-        Optional<Restaurant> owned = restaurantRepository.findByOwnerUser_Id(user.getId());
-        if (owned.isPresent()) {
-            return owned;
+        String selected = RestaurantContext.get();
+        if (selected != null) {
+            Optional<Restaurant> bySelection = resolveSelected(user, selected);
+            if (bySelection.isPresent()) {
+                return bySelection;
+            }
+            // Header named a restaurant that doesn't exist or isn't this user's — ignore it
+            // and fall through to their default, rather than failing the whole request.
+        }
+
+        List<Restaurant> owned = restaurantRepository.findAllByOwnerUser_IdOrderByIdAsc(user.getId());
+        if (!owned.isEmpty()) {
+            return Optional.of(owned.get(0));
         }
         return restaurantStaffRepository
                 .findByUser_IdAndStatus(user.getId(), StaffStatus.ACTIVE)
                 .map(RestaurantStaff::getRestaurant);
+    }
+
+    private Optional<Restaurant> resolveSelected(User user, String selectedPublicId) {
+        UUID publicId;
+        try {
+            publicId = UUID.fromString(selectedPublicId);
+        } catch (IllegalArgumentException malformed) {
+            return Optional.empty();
+        }
+        return restaurantRepository.findByPublicId(publicId)
+                .filter(r -> isOwner(user, r.getId()) || isActiveStaff(user, r.getId()));
+    }
+
+    /** Every restaurant this user can manage — their own restaurants, or the one they staff. For the restaurant switcher. */
+    @Transactional(readOnly = true)
+    public List<Restaurant> listRestaurantsForUser(User user) {
+        List<Restaurant> owned = restaurantRepository.findAllByOwnerUser_IdOrderByIdAsc(user.getId());
+        if (!owned.isEmpty()) {
+            return owned;
+        }
+        return restaurantStaffRepository
+                .findByUser_IdAndStatus(user.getId(), StaffStatus.ACTIVE)
+                .map(RestaurantStaff::getRestaurant)
+                .map(List::of)
+                .orElse(List.of());
     }
 
     /** Same as above, but throws if the user has no restaurant. */

@@ -7,8 +7,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class CustomerProfileUpdateRequest
-{
+public class CustomerProfileUpdateRequest {
     private String name;
     private String phoneNumber;
     private LocalDate dateOfBirth;
