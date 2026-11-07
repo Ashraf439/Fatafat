@@ -121,7 +121,9 @@ public class CustomerOrderService {
         LocalDateTime now = LocalDateTime.now();
 
         Order order = new Order();
-        order.setOrderNumber(orderNumberService.next(cart.restaurant().getId()));
+        var issued = orderNumberService.next(cart.restaurant().getId());
+        order.setOrderNumber(issued.number());
+        order.setOrderCode(issued.code());
         order.setCustomer(customer);
         order.setRestaurant(cart.restaurant());
         order.setDeliveryAddress(address);

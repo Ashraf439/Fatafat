@@ -30,7 +30,7 @@ public class InvoiceService {
             Font bold = new Font(Font.HELVETICA, 10, Font.BOLD);
             Font normal = new Font(Font.HELVETICA, 10);
 
-            doc.add(new Paragraph("Invoice — Order #" + o.orderNumber(), title));
+            doc.add(new Paragraph("Invoice — Order " + (o.orderCode() != null ? o.orderCode() : "#" + o.orderNumber()), title));
             doc.add(new Paragraph(o.restaurant().name(), normal));
             doc.add(new Paragraph("Placed: " + o.placedAt(), normal));
             doc.add(new Paragraph("Status: " + o.status() + "  |  Payment: " + o.paymentMethod()

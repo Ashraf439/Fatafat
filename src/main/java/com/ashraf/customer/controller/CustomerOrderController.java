@@ -76,9 +76,10 @@ public class CustomerOrderController {
     public ResponseEntity<byte[]> invoice(@AuthenticationPrincipal CustomUserDetails principal,
                                           @PathVariable("orderId") UUID orderId) {
         byte[] pdf = invoiceService.generate(principal.getUser(), orderId);
+        OrderResponse order = orderService.get(principal.getUser(), orderId);
         return ResponseEntity.ok()
                 .header("Content-Type", "application/pdf")
-                .header("Content-Disposition", "inline; filename=invoice-" + orderId + ".pdf")
+                .header("Content-Disposition", "inline; filename=invoice-" + (order.orderCode() != null ? order.orderCode() : order.orderNumber()) + ".pdf")
                 .body(pdf);
     }
 

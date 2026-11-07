@@ -77,4 +77,7 @@ public class Order extends PublicIdEntity {
     private LocalDateTime createdAt;
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Column(name = "order_code", unique = true, length = 32)
+    private String orderCode;
 }

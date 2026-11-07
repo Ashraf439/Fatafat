@@ -2,6 +2,7 @@ package com.ashraf.restaurant.staff.dto;
 
 import com.ashraf.core.enums.PermissionEffect;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +11,6 @@ import lombok.Setter;
 public class StaffPermissionRequest {
     @NotBlank
     private String permissionName;
-    @NotBlank
+    @NotNull
     private PermissionEffect effect;
 }

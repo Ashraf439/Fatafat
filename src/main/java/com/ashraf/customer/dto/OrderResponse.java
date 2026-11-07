@@ -14,6 +14,7 @@ import java.util.UUID;
 public record OrderResponse(
         UUID id,
         Integer orderNumber,
+        String orderCode,
         String status,
         RestaurantRef restaurant,
         List<OrderItemResponse> items,
@@ -58,6 +59,7 @@ public record OrderResponse(
         return new OrderResponse(
                 o.getPublicId(),
                 o.getOrderNumber(),
+                o.getOrderCode(),
                 o.getOrderStatus().name(),
                 new RestaurantRef(o.getRestaurant().getPublicId(), o.getRestaurant().getName(),
                         o.getRestaurant().getImageUrl()),

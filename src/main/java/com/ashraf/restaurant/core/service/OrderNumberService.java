@@ -19,15 +19,17 @@ public class OrderNumberService {
         this.jdbc = jdbc;
     }
 
+    public record Issued(int number, String code) {}
+
     @Transactional(propagation = Propagation.MANDATORY)
-    public int next(Long restaurantId) {
+    public Issued next(Long restaurantId) {
         LocalDate today = LocalDate.now(BUSINESS_ZONE);
 
         jdbc.update("""
-                INSERT INTO restaurant_order_counters (restaurant_id, business_date, last_number)
-                VALUES (?, ?, 0)
-                ON DUPLICATE KEY UPDATE last_number = last_number
-                """, restaurantId, today);
+            INSERT INTO restaurant_order_counters (restaurant_id, business_date, last_number)
+            VALUES (?, ?, 0)
+            ON DUPLICATE KEY UPDATE last_number = last_number
+            """, restaurantId, today);
 
         Integer last = jdbc.queryForObject(
                 "SELECT last_number FROM restaurant_order_counters WHERE restaurant_id = ? AND business_date = ? FOR UPDATE",
@@ -36,6 +38,9 @@ public class OrderNumberService {
 
         jdbc.update("UPDATE restaurant_order_counters SET last_number = ? WHERE restaurant_id = ? AND business_date = ?",
                 next, restaurantId, today);
-        return next;
+
+        String code = "FTF-" + today.format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE)
+                + "-" + restaurantId + "-" + String.format("%04d", next);
+        return new Issued(next, code);
     }
 }

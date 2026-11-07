@@ -11,6 +11,7 @@ import java.util.UUID;
 public record RestaurantOrderResponse(
         UUID id,
         Integer orderNumber,
+        String orderCode,
         String status,
         LocalDateTime placedAt,
         LocalDateTime estimatedDeliveryTime,

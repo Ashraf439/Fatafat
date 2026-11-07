@@ -53,4 +53,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Query("select o.id from Order o where o.orderStatus = :status and o.updatedAt < :cutoff")
     List<Long> findIdsByStatusUpdatedBefore(@Param("status") OrderStatus status,
                                             @Param("cutoff") LocalDateTime cutoff);
+
+    Optional<Order> findByOrderCode(String orderCode);
 }

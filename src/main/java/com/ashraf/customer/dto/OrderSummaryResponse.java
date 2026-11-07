@@ -12,6 +12,7 @@ import java.util.UUID;
 public record OrderSummaryResponse(
         UUID id,
         Integer orderNumber,
+        String orderCode,
         String status,
         Long restaurantId,
         String restaurantName,
@@ -33,6 +34,7 @@ public record OrderSummaryResponse(
         return new OrderSummaryResponse(
                 o.getPublicId(),
                 o.getOrderNumber(),
+                o.getOrderCode(),
                 o.getOrderStatus().name(),
                 o.getRestaurant().getId(),
                 o.getRestaurant().getName(),
