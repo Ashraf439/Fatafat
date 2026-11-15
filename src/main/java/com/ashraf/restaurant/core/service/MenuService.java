@@ -155,7 +155,7 @@ public class MenuService {
     @Transactional(readOnly = true)
     public List<MenuResponse> getMenu(User user) {
         Long restaurantId = restaurantAccessService.resolveRestaurantId(user);
-        return menuRepository.findByRestaurant_Id(restaurantId)
+        return menuRepository.findByRestaurant_IdAndDeletedFalse(restaurantId)
                 .stream()
                 .map(MenuResponse::new)
                 .toList();
@@ -167,7 +167,7 @@ public class MenuService {
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found "));
 
         Long restaurantId = restaurant.getId();
-        Map<String, List<MenuResponse>> grouped = menuRepository.findByRestaurant_Id(restaurantId)
+        Map<String, List<MenuResponse>> grouped = menuRepository.findByRestaurant_IdAndDeletedFalse(restaurantId)
                 .stream()
                 .map(MenuResponse::new)
                 .collect(Collectors.groupingBy(
@@ -183,5 +183,26 @@ public class MenuService {
                 restaurant.getIsOpen(),
                 restaurant.getImageUrl(),
                 grouped);
+    }
+    @Transactional
+    public void deleteMenuItem(User user, UUID menuId) {
+        Long restaurantId = restaurantAccessService.resolveRestaurantId(user);
+        Menu menu = menuRepository.findByPublicId(menuId)
+                .filter(m -> !m.isDeleted())
+                .orElseThrow(() -> new IllegalArgumentException("Menu item not found"));
+
+        if (!menu.getRestaurant().getId().equals(restaurantId)) {
+            throw new AccessDeniedException("Menu item does not belong to your restaurant");
+        }
+
+        String imagePublicId = menu.getImagePublicId();
+        menu.setDeleted(true);
+        menu.setImageUrl(null);
+        menu.setImagePublicId(null);
+        menuRepository.save(menu);
+
+        if (imagePublicId != null) {
+            imageStorageService.delete(imagePublicId);
+        }
     }
 }

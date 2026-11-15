@@ -58,6 +58,15 @@ public class RestaurantController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", "Successfully saved " + savedMenu.size() + " items."));
     }
+    @DeleteMapping("/menu/{menuId}")
+    public ResponseEntity<Void> deleteMenuItem(@PathVariable UUID menuId,
+                                               @AuthenticationPrincipal CustomUserDetails principal) {
+        if (!permissionService.hasPermission(principal.getUser().getId(), "MENU_ITEM_REMOVE")) {
+            throw new AccessDeniedException("No access");
+        }
+        menuService.deleteMenuItem(principal.getUser(), menuId);
+        return ResponseEntity.noContent().build();
+    }
     @GetMapping("/menu")
     public ResponseEntity<List<MenuResponse>> getMenu(@AuthenticationPrincipal CustomUserDetails principal) {
         return ResponseEntity.ok(menuService.getMenu(principal.getUser()));
@@ -166,6 +175,7 @@ public class RestaurantController {
     public ResponseEntity<Map<String, Boolean>> myPermissions(@AuthenticationPrincipal CustomUserDetails principal) {
         List<String> checks = List.of(
                 "MENU_ITEM_ADD",
+                "MENU_ITEM_REMOVE",
                 "RESTAURANT_EDIT",
                 "STAFF_ADD",
                 "STAFF_REMOVE",

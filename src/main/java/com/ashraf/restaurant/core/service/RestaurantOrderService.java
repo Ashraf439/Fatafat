@@ -11,6 +11,7 @@ import com.ashraf.restaurant.core.dto.RestaurantOrderResponse;
 import com.ashraf.restaurant.core.entity.Order;
 import com.ashraf.restaurant.core.enums.OrderStatus;
 import com.ashraf.restaurant.core.repository.OrderRepository;
+import com.ashraf.rider.service.RiderMatchingService;
 import com.ashraf.shared.exception.AccessDeniedException;
 import com.ashraf.shared.exception.BusinessRuleException;
 import com.ashraf.shared.exception.ResourceNotFoundException;
@@ -44,13 +45,15 @@ public class RestaurantOrderService {
     private final RestaurantAccessService access;
     private final PermissionService permissions;
     private final RefundService refundService;
+    private final RiderMatchingService riderMatchingService;
 
     public RestaurantOrderService(OrderRepository orderRepository, RestaurantAccessService access,
-                                  PermissionService permissions, RefundService refundService) {
+                                  PermissionService permissions, RefundService refundService, RiderMatchingService riderMatchingService) {
         this.orderRepository = orderRepository;
         this.access = access;
         this.permissions = permissions;
         this.refundService = refundService;
+        this.riderMatchingService = riderMatchingService;
     }
 
     // ---- reading -----------------------------------------------------------------------------
@@ -83,6 +86,9 @@ public class RestaurantOrderService {
         }
 
         order.setOrderStatus(target);
+        if (target == OUT_FOR_DELIVERY) {
+            riderMatchingService.attemptAssign(order);
+        }
         if (target == DELIVERED && order.getPaymentMethod() == PaymentMethod.CASH) {
             order.setPaymentStatus(PaymentStatus.PAID);          // the cash was collected at the door
         }

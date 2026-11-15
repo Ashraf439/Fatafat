@@ -4,9 +4,11 @@ import com.ashraf.customer.dto.*;
 import com.ashraf.customer.security.CustomUserDetails;
 import com.ashraf.customer.service.CustomerOrderService;
 import com.ashraf.customer.service.CustomerPaymentService;
-import com.ashraf.customer.service.InvoiceService;
 import com.ashraf.customer.service.CustomerPaymentService.PaymentSession;
+import com.ashraf.customer.service.InvoiceService;
 import com.ashraf.payment.dto.VerifyOrderPaymentRequest;
+import com.ashraf.rider.dto.DeliveryTrackingResponse;
+import com.ashraf.rider.service.DeliveryService;
 import com.ashraf.shared.dto.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,13 +25,15 @@ public class CustomerOrderController {
     private final CustomerOrderService orderService;
     private final CustomerPaymentService customerPaymentService;
     private final InvoiceService invoiceService;
+    private final DeliveryService deliveryService;
 
     public CustomerOrderController(CustomerOrderService orderService,
                                    CustomerPaymentService customerPaymentService,
-                                   InvoiceService invoiceService) {
+                                   InvoiceService invoiceService, DeliveryService deliveryService) {
         this.orderService = orderService;
         this.customerPaymentService = customerPaymentService;
         this.invoiceService = invoiceService;
+        this.deliveryService = deliveryService;
     }
 
     @PostMapping("/quote")
@@ -94,5 +98,11 @@ public class CustomerOrderController {
                                                        @PathVariable("orderId") UUID orderId,
                                                        @Valid @RequestBody VerifyOrderPaymentRequest request) {
         return ResponseEntity.ok(customerPaymentService.confirm(principal.getUser(), orderId, request));
+    }
+
+    @GetMapping("/{orderId}/delivery")
+    public ResponseEntity<DeliveryTrackingResponse> delivery(@AuthenticationPrincipal CustomUserDetails principal,
+                                                             @PathVariable UUID orderId) {
+        return ResponseEntity.ok(deliveryService.trackForCustomer(principal.getUser(), orderId));
     }
 }

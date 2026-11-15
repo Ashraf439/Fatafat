@@ -39,6 +39,9 @@ public class Menu extends PublicIdEntity {
 
     private Integer preparationTimeMinutes;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean deleted = false;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp

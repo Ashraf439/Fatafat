@@ -20,8 +20,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class RestaurantStaffService {
@@ -107,8 +109,16 @@ public class RestaurantStaffService {
                         staff.getUser().getPublicId(),
                         staff.getUser().getEmail(),
                         resolveRoleName(staff.getUser()),
-                        staff.getStatus()))
+                        staff.getStatus(),
+                        resolvePermissionOverrides(staff.getUser())))
                 .toList();
+    }
+
+    private Map<String, String> resolvePermissionOverrides(User user) {
+        return userPermissionsRepository.findByUser_Id(user.getId()).stream()
+                .collect(Collectors.toMap(
+                        up -> up.getPermission().getName(),
+                        up -> up.getEffect().name()));
     }
 
     @Transactional

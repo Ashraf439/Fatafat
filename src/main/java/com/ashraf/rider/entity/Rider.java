@@ -21,7 +21,7 @@ public class Rider extends PublicIdEntity {
 
     private String name;
 
-    private Boolean isAvailable;
+    private Boolean isAvailable = false;
 
     private String vehicleType;
 

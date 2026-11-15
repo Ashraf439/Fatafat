@@ -55,4 +55,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
                                             @Param("cutoff") LocalDateTime cutoff);
 
     Optional<Order> findByOrderCode(String orderCode);
+
+    @Query("select o.id from Order o where o.orderStatus = :status and o.delivery is null")
+    List<Long> findIdsAwaitingRider(@Param("status") OrderStatus status);
 }

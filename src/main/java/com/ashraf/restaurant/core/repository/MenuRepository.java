@@ -26,8 +26,12 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
                    count(m) as itemCount,
                    sum(case when m.foodType = com.ashraf.restaurant.core.enums.FoodType.VEG then 1 else 0 end) as vegCount
             from Menu m
-            where m.restaurant.id in :restaurantIds
+            where m.restaurant.id in :restaurantIds and m.deleted = false
             group by m.restaurant.id
             """)
     List<RestaurantMenuStats> summarizeByRestaurantIds(@Param("restaurantIds") Collection<Long> restaurantIds);
+
+    List<Menu> findByRestaurant_IdAndDeletedFalse(Long restaurantId);
+
+    List<Menu> findByPublicIdInAndDeletedFalse(Collection<UUID> publicIds);
 }

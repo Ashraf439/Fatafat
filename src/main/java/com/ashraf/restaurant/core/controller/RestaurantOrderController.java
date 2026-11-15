@@ -5,6 +5,8 @@ import com.ashraf.restaurant.core.dto.RestaurantCancelOrderRequest;
 import com.ashraf.restaurant.core.dto.RestaurantOrderResponse;
 import com.ashraf.restaurant.core.dto.UpdateOrderStatusRequest;
 import com.ashraf.restaurant.core.service.RestaurantOrderService;
+import com.ashraf.rider.dto.DeliveryTrackingResponse;
+import com.ashraf.rider.service.DeliveryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,9 +21,10 @@ import java.util.UUID;
 public class RestaurantOrderController {
 
     private final RestaurantOrderService orderService;
-
-    public RestaurantOrderController(RestaurantOrderService orderService) {
+    private final DeliveryService deliveryService;
+    public RestaurantOrderController(RestaurantOrderService orderService, DeliveryService deliveryService) {
         this.orderService = orderService;
+        this.deliveryService = deliveryService;
     }
 
     /** view=active (default): the kitchen queue. view=history: last 50 delivered/cancelled. */
@@ -30,6 +33,12 @@ public class RestaurantOrderController {
             @AuthenticationPrincipal CustomUserDetails principal,
             @RequestParam(name = "view", defaultValue = "active") String view) {
         return ResponseEntity.ok(orderService.list(principal.getUser(), view));
+    }
+
+    @GetMapping("/{orderId}/delivery")
+    public ResponseEntity<DeliveryTrackingResponse> delivery(@AuthenticationPrincipal CustomUserDetails principal,
+                                                             @PathVariable UUID orderId) {
+        return ResponseEntity.ok(deliveryService.trackForRestaurant(principal.getUser(), orderId));
     }
 
     @PatchMapping("/{orderId}/status")
@@ -47,4 +56,5 @@ public class RestaurantOrderController {
             @Valid @RequestBody RestaurantCancelOrderRequest request) {
         return ResponseEntity.ok(orderService.cancel(principal.getUser(), orderId, request.reason()));
     }
+
 }

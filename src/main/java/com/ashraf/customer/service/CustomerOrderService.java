@@ -237,7 +237,7 @@ public class CustomerOrderService {
                     a.specialInstructions() != null ? a.specialInstructions() : b.specialInstructions()));
         }
 
-        Map<UUID, Menu> menus = menuRepository.findByPublicIdIn(merged.keySet()).stream()
+        Map<UUID, Menu> menus = menuRepository.findByPublicIdInAndDeletedFalse(merged.keySet()).stream()
                 .collect(Collectors.toMap(Menu::getPublicId, Function.identity()));
 
         List<ResolvedLine> lines = new ArrayList<>();
