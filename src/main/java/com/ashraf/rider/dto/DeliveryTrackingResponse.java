@@ -6,4 +6,4 @@ public record DeliveryTrackingResponse(String status, String riderName, String r
                                        String vehicleType, String vehicleNumber,
                                        BigDecimal pickupLatitude, BigDecimal pickupLongitude,
                                        BigDecimal dropLatitude, BigDecimal dropLongitude,
-                                       String locationTopic) {}
+                                       String locationTopic, Boolean otpRequired, String deliveryOtp) {}

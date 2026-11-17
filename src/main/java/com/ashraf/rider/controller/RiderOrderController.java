@@ -39,11 +39,11 @@ public class RiderOrderController {
     }
 
     @PatchMapping("/{orderId}/status")
-    public ResponseEntity<Delivery> updateStatus(
-            @AuthenticationPrincipal CustomUserDetails principal,
-            @PathVariable UUID orderId,
-            @Valid @RequestBody UpdateDeliveryStatusRequest request) {
+    public ResponseEntity<Delivery> updateStatus(@AuthenticationPrincipal CustomUserDetails principal,
+                                                 @PathVariable UUID orderId,
+                                                 @Valid @RequestBody UpdateDeliveryStatusRequest request) {
         Long riderId = principal.getUser().getRider().getId();
-        return ResponseEntity.ok(deliveryService.advance(riderId, orderId, request.status()));
+        return ResponseEntity.ok(deliveryService.advance(riderId, orderId, request.status(),
+                request.currentLat(), request.currentLng(), request.otp(), request.codCollected()));
     }
 }

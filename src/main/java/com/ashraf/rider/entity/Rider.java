@@ -1,10 +1,13 @@
 package com.ashraf.rider.entity;
 
 import com.ashraf.core.entity.User;
+import com.ashraf.rider.enums.RiderVerificationStatus;
 import com.ashraf.shared.entity.PublicIdEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "riders")
@@ -38,4 +41,14 @@ public class Rider extends PublicIdEntity {
     private String operatingCity;
 
     private String referralCode;
+
+    @Enumerated(EnumType.STRING)
+    private RiderVerificationStatus verificationStatus = RiderVerificationStatus.PENDING_REVIEW;
+
+    private String rejectionReason;
+    private LocalDateTime reviewedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewed_by_admin_id")
+    private User reviewedByAdmin;
 }

@@ -37,4 +37,7 @@ public class Delivery {
     private LocalDateTime deliveredAt;
     private String deliveryOtp; // verify handoff to customer
     private BigDecimal distanceKm;
+
+    private Boolean otpRequired = false;
+    private Boolean codCollected;
 }

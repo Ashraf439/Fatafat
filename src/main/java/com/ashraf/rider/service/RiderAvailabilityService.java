@@ -1,7 +1,9 @@
 package com.ashraf.rider.service;
 
 import com.ashraf.rider.entity.Rider;
+import com.ashraf.rider.enums.RiderVerificationStatus;
 import com.ashraf.rider.repository.RiderRepository;
+import com.ashraf.shared.exception.BusinessRuleException;
 import com.ashraf.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,9 @@ public class RiderAvailabilityService {
     public void setOnline(Long riderId, double latitude, double longitude) {
         Rider rider = riderRepository.findById(riderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Rider not found"));
+        if (rider.getVerificationStatus() != RiderVerificationStatus.APPROVED) {
+            throw new BusinessRuleException("Your account is still pending verification.");
+        }
         rider.setIsAvailable(true);
         riderLocationService.updateLocation(riderId, latitude, longitude);
     }

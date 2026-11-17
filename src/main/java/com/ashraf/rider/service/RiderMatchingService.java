@@ -9,10 +9,12 @@ import com.ashraf.rider.entity.Rider;
 import com.ashraf.rider.enums.DeliveryStatus;
 import com.ashraf.rider.repository.DeliveryRepository;
 import com.ashraf.rider.repository.RiderRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Service
@@ -23,6 +25,9 @@ public class RiderMatchingService {
     private final RiderRepository riderRepository;
     private final DeliveryRepository deliveryRepository;
     private final SimpMessagingTemplate messagingTemplate;
+
+    @Value("${delivery.high-value-otp-threshold:1000}")
+    private BigDecimal highValueThreshold;
 
     public RiderMatchingService(RiderLocationService riderLocationService,
                                 RiderRepository riderRepository, DeliveryRepository deliveryRepository, SimpMessagingTemplate messagingTemplate) {
@@ -61,14 +66,23 @@ public class RiderMatchingService {
         delivery.setOrder(order);
         delivery.setRider(rider);
         delivery.setDeliveryStatus(DeliveryStatus.PENDING);
+
+        boolean highValue = order.getTotalAmount() != null
+                && order.getTotalAmount().compareTo(highValueThreshold) >= 0;
+        boolean flaggedAccount = Boolean.TRUE.equals(order.getCustomer().getAlwaysRequireDeliveryOtp());
+        boolean otpRequired = highValue || flaggedAccount;
+
+        delivery.setOtpRequired(otpRequired);
+        if (otpRequired) {
+            delivery.setDeliveryOtp(String.format("%04d", new java.security.SecureRandom().nextInt(10_000)));
+        }
         deliveryRepository.save(delivery);
 
         rider.setIsAvailable(false);
         riderLocationService.markUnavailable(rider.getId());
 
         CustomerAddress drop = order.getDeliveryAddress();
-        messagingTemplate.convertAndSend(
-                "/topic/rider/" + rider.getId() + "/jobs",
+        messagingTemplate.convertAndSend("/topic/rider/" + rider.getId() + "/jobs",
                 new JobOfferResponse(order.getPublicId(), order.getRestaurant().getName(),
                         pickup.getLatitude(), pickup.getLongitude(), drop.getLatitude(), drop.getLongitude()));
     }

@@ -47,4 +47,6 @@ public class Customer {
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     private List<CustomerAddress> addresses;
+
+    private Boolean alwaysRequireDeliveryOtp = false;
 }

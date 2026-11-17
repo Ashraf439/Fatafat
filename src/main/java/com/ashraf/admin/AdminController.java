@@ -6,6 +6,9 @@ import com.ashraf.restaurant.onboarding.dto.ApplicationSummaryResponse;
 import com.ashraf.restaurant.onboarding.dto.RejectApplicationRequest;
 import com.ashraf.restaurant.onboarding.enums.RestaurantOnboardingStatus;
 import com.ashraf.restaurant.onboarding.service.RestaurantOnboardingService;
+import com.ashraf.rider.dto.RejectRiderRequest;
+import com.ashraf.rider.dto.RiderSummaryResponse;
+import com.ashraf.rider.enums.RiderVerificationStatus;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,6 +42,18 @@ public class AdminController {
         return  ResponseEntity.ok(Map.of("message","Successfully approved."));
     }
 
+    @PatchMapping("/riders/{id}/reject")
+    public ResponseEntity<Map<String, String>> rejectRider(@PathVariable("id") UUID id,
+                                                           @Valid @RequestBody RejectRiderRequest req) {
+        adminService.rejectRider(id, req);
+        return ResponseEntity.ok(Map.of("message", "Rider application rejected."));
+    }
+
+    @GetMapping("/riders")
+    public ResponseEntity<List<RiderSummaryResponse>> listRiders(
+            @RequestParam(required = false) RiderVerificationStatus status) {
+        return ResponseEntity.ok(adminService.listRiders(status));
+    }
     @PatchMapping("/restaurant-applications/{id}/approve")
     public ResponseEntity<Map<String, String>> approveRestaurantApplication(@PathVariable("id") UUID id,
                                                                             @AuthenticationPrincipal CustomUserDetails principal) {

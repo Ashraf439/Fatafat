@@ -1,5 +1,6 @@
 package com.ashraf.rider.service;
 
+import com.ashraf.commerce.enums.PaymentMethod;
 import com.ashraf.core.entity.User;
 import com.ashraf.customer.entity.Customer;
 import com.ashraf.customer.entity.CustomerAddress;
@@ -15,6 +16,8 @@ import com.ashraf.rider.enums.DeliveryStatus;
 import com.ashraf.rider.repository.DeliveryRepository;
 import com.ashraf.shared.exception.BusinessRuleException;
 import com.ashraf.shared.exception.ResourceNotFoundException;
+import com.ashraf.shared.utils.GeoUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +39,9 @@ public class DeliveryService {
     private final RestaurantAccessService restaurantAccess;
     private final RoutingService routingService;
 
+    @Value("${delivery.max-handoff-distance-meters:150}")
+    private double maxHandoffDistanceMeters;
+
     public DeliveryService(DeliveryRepository deliveryRepository, CustomerLookupService customerLookup,
                            RestaurantAccessService restaurantAccess, RoutingService routingService) {
         this.deliveryRepository = deliveryRepository;
@@ -47,12 +53,18 @@ public class DeliveryService {
     // ---- rider-side transitions --------------------------------------------------------
 
     @Transactional
-    public Delivery advance(Long riderId, UUID orderPublicId, DeliveryStatus target) {
+    public Delivery advance(Long riderId, UUID orderPublicId, DeliveryStatus target,
+                            BigDecimal currentLat, BigDecimal currentLng, String otp, Boolean codCollected) {
         Delivery delivery = ownedByRider(riderId, orderPublicId);
         DeliveryStatus current = delivery.getDeliveryStatus();
         if (NEXT.get(current) != target) {
             throw new BusinessRuleException("Delivery is " + current + ", can't move to " + target);
         }
+
+        if (target == DeliveryStatus.DELIVERED) {
+            verifyHandoff(delivery, currentLat, currentLng, otp, codCollected);
+        }
+
         delivery.setDeliveryStatus(target);
         if (target == DeliveryStatus.PICKED_UP) delivery.setPickedUpAt(LocalDateTime.now());
         if (target == DeliveryStatus.DELIVERED) {
@@ -61,6 +73,33 @@ public class DeliveryService {
             delivery.getRider().setIsAvailable(true);
         }
         return delivery;
+    }
+
+    private void verifyHandoff(Delivery delivery, BigDecimal currentLat, BigDecimal currentLng,
+                               String otp, Boolean codCollected) {
+        if (currentLat == null || currentLng == null) {
+            throw new BusinessRuleException("Current location is required to complete delivery.");
+        }
+        CustomerAddress drop = delivery.getOrder().getDeliveryAddress();
+        double distance = GeoUtils.distanceMeters(
+                currentLat.doubleValue(), currentLng.doubleValue(),
+                drop.getLatitude().doubleValue(), drop.getLongitude().doubleValue());
+        if (distance > maxHandoffDistanceMeters) {
+            throw new BusinessRuleException(
+                    "You're " + Math.round(distance) + "m from the delivery address — move closer to complete delivery.");
+        }
+
+        if (Boolean.TRUE.equals(delivery.getOtpRequired())
+                && (otp == null || !otp.equals(delivery.getDeliveryOtp()))) {
+            throw new BusinessRuleException("Incorrect or missing delivery OTP.");
+        }
+
+        if (delivery.getOrder().getPaymentMethod() == PaymentMethod.CASH) {
+            if (!Boolean.TRUE.equals(codCollected)) {
+                throw new BusinessRuleException("Please confirm cash collection before completing delivery.");
+            }
+            delivery.setCodCollected(true);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +116,7 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findByOrder_PublicId(orderPublicId)
                 .filter(d -> d.getOrder().getCustomer().getId().equals(customer.getId()))
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery not found"));
-        return toTrackingResponse(delivery);
+        return toTrackingResponse(delivery, true);
     }
 
     @Transactional(readOnly = true)
@@ -86,10 +125,11 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findByOrder_PublicId(orderPublicId)
                 .filter(d -> d.getOrder().getRestaurant().getId().equals(restaurantId))
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery not found"));
-        return toTrackingResponse(delivery);
+        return toTrackingResponse(delivery, false);
     }
 
-    private DeliveryTrackingResponse toTrackingResponse(Delivery delivery) {
+    // DeliveryService — trackForCustomer passes true, trackForRestaurant passes false
+    private DeliveryTrackingResponse toTrackingResponse(Delivery delivery, boolean includeOtp) {
         Order order = delivery.getOrder();
         RestaurantAddress pickup = defaultAddress(order);
         CustomerAddress drop = order.getDeliveryAddress();
@@ -99,8 +139,9 @@ public class DeliveryService {
                 delivery.getDeliveryStatus().name(), rider.getName(), rider.getUser().getPhoneNumber(),
                 rider.getVehicleType(), rider.getVehicleNumber(),
                 pickup != null ? pickup.getLatitude() : null, pickup != null ? pickup.getLongitude() : null,
-                drop.getLatitude(), drop.getLongitude(),
-                "/topic/delivery/" + order.getPublicId() + "/location");
+                drop.getLatitude(), drop.getLongitude(), "/topic/delivery/" + order.getPublicId() + "/location",
+                delivery.getOtpRequired(),
+                includeOtp && Boolean.TRUE.equals(delivery.getOtpRequired()) ? delivery.getDeliveryOtp() : null);
     }
 
     // ---- routing, for the rider's map ---------------------------------------------------
@@ -133,4 +174,5 @@ public class DeliveryService {
                 .filter(a -> Boolean.TRUE.equals(a.getIsDefault()))
                 .findFirst().orElse(null);
     }
+
 }

@@ -3,6 +3,9 @@ package com.ashraf.admin;
 import com.ashraf.admin.dto.AdminProfileResponse;
 import com.ashraf.restaurant.core.entity.Restaurant;
 import com.ashraf.rider.entity.Rider;
+import com.ashraf.rider.dto.RejectRiderRequest;
+import com.ashraf.rider.dto.RiderSummaryResponse;
+import com.ashraf.rider.enums.RiderVerificationStatus;
 import com.ashraf.core.entity.User;
 import com.ashraf.core.entity.UserRoles;
 import com.ashraf.core.enums.Status;
@@ -14,6 +17,7 @@ import com.ashraf.core.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +44,46 @@ public class AdminService {
     public void approveRiders(UUID id) {
         Rider rider = riderRepository.findByPublicId(id)
                 .orElseThrow(() -> new UserDoesNotExistException("Rider does not exist."));
-        activateUser(rider.getUser());
+
+        if (rider.getVerificationStatus() == RiderVerificationStatus.APPROVED) {
+            throw new AccountAlreadyActivatedException("Rider already approved.");
+        }
+
+        rider.setVerificationStatus(RiderVerificationStatus.APPROVED);
+        rider.setRejectionReason(null);
+        rider.setReviewedAt(LocalDateTime.now());
+        riderRepository.save(rider);
+
+        if (rider.getUser().getStatus() != Status.ACTIVE) {
+            rider.getUser().setStatus(Status.ACTIVE);
+            userRepository.save(rider.getUser());
+        }
+    }
+
+
+    @Transactional
+    public void rejectRider(UUID id, RejectRiderRequest request) {
+        Rider rider = riderRepository.findByPublicId(id)
+                .orElseThrow(() -> new UserDoesNotExistException("Rider does not exist."));
+        rider.setVerificationStatus(RiderVerificationStatus.REJECTED);
+        rider.setRejectionReason(request.getRejectionReason());
+        rider.setReviewedAt(LocalDateTime.now());
+        riderRepository.save(rider);
+    }
+
+    @Transactional
+    public List<RiderSummaryResponse> listRiders(RiderVerificationStatus status) {
+        List<Rider> riders = status != null
+                ? riderRepository.findByVerificationStatus(status)
+                : riderRepository.findAll();
+        return riders.stream().map(this::toRiderSummary).toList();
+    }
+
+
+    private RiderSummaryResponse toRiderSummary(Rider rider) {
+        return new RiderSummaryResponse(rider.getPublicId(), rider.getName(), rider.getUser().getEmail(),
+                rider.getUser().getPhoneNumber(), rider.getVehicleType(), rider.getVehicleNumber(),
+                rider.getVerificationStatus());
     }
 
     private void activateUser(User user) {
