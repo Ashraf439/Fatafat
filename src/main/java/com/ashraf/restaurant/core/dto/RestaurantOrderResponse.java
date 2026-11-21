@@ -25,7 +25,11 @@ public record RestaurantOrderResponse(
         String specialInstructions,
         String cancelReason,
         String nextStatus,                  // the one status this user may move the order to, or null
-        boolean cancellable                 // whether this user may cancel/reject it right now
+        boolean cancellable,                // whether this user may cancel/reject it right now
+        RiderInfo rider                     // null until a rider has been matched
 ) {
     public record Line(String name, int quantity, String instructions) {}
+
+    /** deliveryStatus: PENDING (heading to the restaurant), PICKED_UP, ON_THE_WAY, DELIVERED, CANCELLED. */
+    public record RiderInfo(String name, String phoneNumber, String vehicleNumber, String deliveryStatus) {}
 }

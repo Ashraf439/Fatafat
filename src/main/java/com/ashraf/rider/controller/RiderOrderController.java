@@ -1,8 +1,8 @@
 package com.ashraf.rider.controller;
 
 import com.ashraf.customer.security.CustomUserDetails;
+import com.ashraf.rider.dto.ActiveDeliveryResponse;
 import com.ashraf.rider.dto.UpdateDeliveryStatusRequest;
-import com.ashraf.rider.entity.Delivery;
 import com.ashraf.rider.service.DeliveryService;
 import com.ashraf.rider.service.RoutingService;
 import jakarta.validation.Valid;
@@ -23,10 +23,13 @@ public class RiderOrderController {
         this.deliveryService = deliveryService;
     }
 
+    /** 200 with the job in hand, or 204 when the rider has none. */
     @GetMapping("/active")
-    public ResponseEntity<Delivery> active(@AuthenticationPrincipal CustomUserDetails principal) {
+    public ResponseEntity<ActiveDeliveryResponse> active(@AuthenticationPrincipal CustomUserDetails principal) {
         Long riderId = principal.getUser().getRider().getId();
-        return ResponseEntity.ok(deliveryService.getActiveDelivery(riderId));
+        return deliveryService.getActiveDelivery(riderId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @GetMapping("/{orderId}/route")
@@ -39,9 +42,9 @@ public class RiderOrderController {
     }
 
     @PatchMapping("/{orderId}/status")
-    public ResponseEntity<Delivery> updateStatus(@AuthenticationPrincipal CustomUserDetails principal,
-                                                 @PathVariable UUID orderId,
-                                                 @Valid @RequestBody UpdateDeliveryStatusRequest request) {
+    public ResponseEntity<ActiveDeliveryResponse> updateStatus(@AuthenticationPrincipal CustomUserDetails principal,
+                                                               @PathVariable UUID orderId,
+                                                               @Valid @RequestBody UpdateDeliveryStatusRequest request) {
         Long riderId = principal.getUser().getRider().getId();
         return ResponseEntity.ok(deliveryService.advance(riderId, orderId, request.status(),
                 request.currentLat(), request.currentLng(), request.otp(), request.codCollected()));

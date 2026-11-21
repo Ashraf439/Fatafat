@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,12 @@ public class RestaurantOnboardingApplication extends PublicIdEntity {
     private String city;
     private String state;
     private String pincode;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @Column(precision = 10, scale = 7)
+    private BigDecimal longitude;
 
     // --- document IDs ---
     private String fssaiLicense;

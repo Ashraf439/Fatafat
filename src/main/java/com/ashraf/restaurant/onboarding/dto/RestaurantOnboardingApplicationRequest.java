@@ -2,12 +2,16 @@ package com.ashraf.restaurant.onboarding.dto;
 
 import com.ashraf.restaurant.core.dto.TimingSlotRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -29,6 +33,15 @@ public class RestaurantOnboardingApplicationRequest {
     @NotBlank
     @Pattern(regexp = "^[0-9]{6}$", message = "Pincode must be 6 digits")
     private String pincode;
+
+    /** Map pin for the restaurant. Riders are matched by distance from it, so it is required. */
+    @NotNull(message = "Pick the restaurant's location on the map")
+    @DecimalMin(value = "-90.0") @DecimalMax(value = "90.0")
+    private BigDecimal latitude;
+
+    @NotNull(message = "Pick the restaurant's location on the map")
+    @DecimalMin(value = "-180.0") @DecimalMax(value = "180.0")
+    private BigDecimal longitude;
 
     @NotBlank
     @Pattern(regexp = "^[0-9]{14}$", message = "FSSAI code must be 14 digits")

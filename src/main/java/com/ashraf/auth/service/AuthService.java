@@ -142,8 +142,12 @@ public class AuthService {
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("Email already registered");
         }
+        if (userRepository.existsByPhoneNumber(req.getPhoneNumber())) {
+            throw new UserAlreadyExistsException("Phone number already registered");
+        }
         User user = new User();
         user.setEmail(req.getEmail());
+        user.setPhoneNumber(req.getPhoneNumber());
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         user.setStatus(Status.PENDING_VERIFICATION);
         user = userRepository.save(user);
@@ -159,6 +163,8 @@ public class AuthService {
         rider.setVehicleNumber(req.getVehicleNumber());
         rider.setVehicleModel(req.getVehicleModel());
         rider.setVehicleColor(req.getVehicleColor());
+        rider.setOperatingCity(address.getCity());
+        rider.setReferralCode(req.getReferralCode());
         Rider savedRider = riderRepository.save(rider);
 
         String tokenStr = UUID.randomUUID().toString();
@@ -204,6 +210,15 @@ public class AuthService {
         return tokenRepository.findByToken(token)
                 .map(t -> t.getUser().getUserRoles().stream()
                         .anyMatch(ur -> "CUSTOMER".equals(ur.getRole().getName())))
+                .orElse(false);
+    }
+
+    /** True when the verification token belongs to a rider account (used to pick the redirect target). */
+    @Transactional
+    public boolean isRiderToken(String token) {
+        return tokenRepository.findByToken(token)
+                .map(t -> t.getUser().getUserRoles().stream()
+                        .anyMatch(ur -> "RIDER".equals(ur.getRole().getName())))
                 .orElse(false);
     }
 

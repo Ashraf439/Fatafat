@@ -1,6 +1,7 @@
 package com.ashraf.rider.service;
 
 import com.ashraf.commerce.enums.PaymentMethod;
+import com.ashraf.commerce.enums.PaymentStatus;
 import com.ashraf.core.entity.User;
 import com.ashraf.customer.entity.Customer;
 import com.ashraf.customer.entity.CustomerAddress;
@@ -9,6 +10,7 @@ import com.ashraf.restaurant.core.entity.Order;
 import com.ashraf.restaurant.core.entity.RestaurantAddress;
 import com.ashraf.restaurant.core.enums.OrderStatus;
 import com.ashraf.restaurant.core.service.RestaurantAccessService;
+import com.ashraf.rider.dto.ActiveDeliveryResponse;
 import com.ashraf.rider.dto.DeliveryTrackingResponse;
 import com.ashraf.rider.entity.Delivery;
 import com.ashraf.rider.entity.Rider;
@@ -23,7 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -33,6 +37,9 @@ public class DeliveryService {
             DeliveryStatus.PENDING, DeliveryStatus.PICKED_UP,
             DeliveryStatus.PICKED_UP, DeliveryStatus.ON_THE_WAY,
             DeliveryStatus.ON_THE_WAY, DeliveryStatus.DELIVERED);
+
+    private static final List<DeliveryStatus> IN_PROGRESS =
+            List.of(DeliveryStatus.PENDING, DeliveryStatus.PICKED_UP, DeliveryStatus.ON_THE_WAY);
 
     private final DeliveryRepository deliveryRepository;
     private final CustomerLookupService customerLookup;
@@ -53,7 +60,7 @@ public class DeliveryService {
     // ---- rider-side transitions --------------------------------------------------------
 
     @Transactional
-    public Delivery advance(Long riderId, UUID orderPublicId, DeliveryStatus target,
+    public ActiveDeliveryResponse advance(Long riderId, UUID orderPublicId, DeliveryStatus target,
                             BigDecimal currentLat, BigDecimal currentLng, String otp, Boolean codCollected) {
         Delivery delivery = ownedByRider(riderId, orderPublicId);
         DeliveryStatus current = delivery.getDeliveryStatus();
@@ -70,9 +77,12 @@ public class DeliveryService {
         if (target == DeliveryStatus.DELIVERED) {
             delivery.setDeliveredAt(LocalDateTime.now());
             delivery.getOrder().setOrderStatus(OrderStatus.DELIVERED);
+            if (delivery.getOrder().getPaymentMethod() == PaymentMethod.CASH) {
+                delivery.getOrder().setPaymentStatus(PaymentStatus.PAID); // cash collected at the door
+            }
             delivery.getRider().setIsAvailable(true);
         }
-        return delivery;
+        return ActiveDeliveryResponse.from(delivery);
     }
 
     private void verifyHandoff(Delivery delivery, BigDecimal currentLat, BigDecimal currentLng,
@@ -103,9 +113,10 @@ public class DeliveryService {
     }
 
     @Transactional(readOnly = true)
-    public Delivery getActiveDelivery(Long riderId) {
-        return deliveryRepository.findFirstByRider_IdAndDeliveryStatusNot(riderId, DeliveryStatus.DELIVERED)
-                .orElseThrow(() -> new ResourceNotFoundException("No active delivery"));
+    public Optional<ActiveDeliveryResponse> getActiveDelivery(Long riderId) {
+        // Cancelled deliveries are finished too, so only look at the in-progress states.
+        return deliveryRepository.findFirstByRider_IdAndDeliveryStatusIn(riderId, IN_PROGRESS)
+                .map(ActiveDeliveryResponse::from);
     }
 
     // ---- tracking, for the customer & restaurant apps ----------------------------------

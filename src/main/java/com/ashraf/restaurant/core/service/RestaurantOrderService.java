@@ -1,7 +1,5 @@
 package com.ashraf.restaurant.core.service;
 
-import com.ashraf.commerce.enums.PaymentMethod;
-import com.ashraf.commerce.enums.PaymentStatus;
 import com.ashraf.core.entity.User;
 import com.ashraf.core.service.PermissionService;
 import com.ashraf.customer.dto.AddressResponse;
@@ -11,6 +9,8 @@ import com.ashraf.restaurant.core.dto.RestaurantOrderResponse;
 import com.ashraf.restaurant.core.entity.Order;
 import com.ashraf.restaurant.core.enums.OrderStatus;
 import com.ashraf.restaurant.core.repository.OrderRepository;
+import com.ashraf.rider.entity.Delivery;
+import com.ashraf.rider.entity.Rider;
 import com.ashraf.rider.service.RiderMatchingService;
 import com.ashraf.shared.exception.AccessDeniedException;
 import com.ashraf.shared.exception.BusinessRuleException;
@@ -18,23 +18,30 @@ import com.ashraf.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 import static com.ashraf.restaurant.core.enums.OrderStatus.*;
 
+@Slf4j
 @Service
 public class RestaurantOrderService {
 
     private static final List<OrderStatus> QUEUE = List.of(PLACED, ACCEPTED, PREPARING, OUT_FOR_DELIVERY);
     private static final List<OrderStatus> FINISHED = List.of(DELIVERED, CANCELLED);
 
-    /** The only legal forward moves. Anything else (skipping a step, moving backwards) is rejected. */
+    /**
+     * The only forward moves a restaurant may make. Anything else (skipping a step, moving backwards) is
+     * rejected. OUT_FOR_DELIVERY -> DELIVERED is deliberately missing: only the assigned rider closes an
+     * order, through DeliveryService, after the location / OTP / cash checks at the door.
+     */
     private static final Map<OrderStatus, OrderStatus> NEXT = Map.of(
             PLACED, ACCEPTED,
             ACCEPTED, PREPARING,
-            PREPARING, OUT_FOR_DELIVERY,
-            OUT_FOR_DELIVERY, DELIVERED);
+            PREPARING, OUT_FOR_DELIVERY);
 
     /** Once the food has left the kitchen it can't be cancelled here; that becomes a complaint. */
     private static final Set<OrderStatus> CANCELLABLE = EnumSet.of(PLACED, ACCEPTED, PREPARING);
@@ -85,12 +92,16 @@ public class RestaurantOrderService {
                     + " and can't be moved to " + label(target) + ".");
         }
 
+        // Riders are matched around the restaurant's map pin. Without one, a dispatched order would wait
+        // for a rider forever, so stop the restaurant before it commits to the order.
+        if ((target == ACCEPTED || target == OUT_FOR_DELIVERY) && !hasMapLocation(order)) {
+            throw new BusinessRuleException("Set your restaurant's location on the map (Profile → Address) "
+                    + "before accepting or dispatching orders. Riders are matched by distance from it.");
+        }
+
         order.setOrderStatus(target);
         if (target == OUT_FOR_DELIVERY) {
-            riderMatchingService.attemptAssign(order);
-        }
-        if (target == DELIVERED && order.getPaymentMethod() == PaymentMethod.CASH) {
-            order.setPaymentStatus(PaymentStatus.PAID);          // the cash was collected at the door
+            assignRiderAfterCommit(order.getId());
         }
         return toResponse(order, true, can(user, "ORDER_CANCEL"));
     }
@@ -117,6 +128,25 @@ public class RestaurantOrderService {
     }
 
     // ---- internals ---------------------------------------------------------------------------
+
+    /**
+     * Rider matching runs only after the dispatch has committed, in its own transaction. Matching
+     * talks to Redis and the rider table and can fail (Redis down, no location on file); none of that
+     * may undo the restaurant's "out for delivery". If it fails or finds nobody,
+     * RiderAssignmentRetryJob tries again every 15 seconds.
+     */
+    private void assignRiderAfterCommit(Long orderId) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    riderMatchingService.attemptAssign(orderId);
+                } catch (RuntimeException e) {
+                    log.warn("Rider assignment for order {} failed; the retry job will try again", orderId, e);
+                }
+            }
+        });
+    }
 
     /** Locks the row, and only hands it over if it belongs to this user's restaurant. */
     private Order lockOwnedOrder(User user, UUID orderId) {
@@ -153,7 +183,23 @@ public class RestaurantOrderService {
                 o.getSpecialInstructions(),
                 o.getCancelReason(),
                 next != null ? next.name() : null,
-                canCancel && CANCELLABLE.contains(s));
+                canCancel && CANCELLABLE.contains(s),
+                riderInfo(o));
+    }
+
+    private static boolean hasMapLocation(Order order) {
+        return order.getRestaurant().getAddresses().stream()
+                .anyMatch(a -> Boolean.TRUE.equals(a.getIsDefault())
+                        && a.getLatitude() != null && a.getLongitude() != null);
+    }
+
+    /** Null until a rider is matched; then who is coming and how far along they are. */
+    private static RestaurantOrderResponse.RiderInfo riderInfo(Order o) {
+        Delivery d = o.getDelivery();
+        if (d == null || d.getRider() == null) return null;
+        Rider r = d.getRider();
+        return new RestaurantOrderResponse.RiderInfo(r.getName(), r.getUser().getPhoneNumber(),
+                r.getVehicleNumber(), d.getDeliveryStatus().name());
     }
 
     private boolean can(User user, String permission) {

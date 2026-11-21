@@ -51,6 +51,8 @@ public class AuthController {
     private String frontendUrl;
     @Value("${frontend.customer-url:http://localhost:5174}")
     private String customerFrontendUrl;
+    @Value("${frontend.rider-url:http://localhost:5176}")
+    private String riderFrontendUrl;
     @Value("${jwt.expiration-ms}")
     private long jwtExpirationMs;
     @Value("${cookie.secure:true}")
@@ -212,6 +214,8 @@ public class AuthController {
         // Work out which app the emailed link belongs to before the token is consumed.
         String landing = authService.isCustomerToken(token)
                 ? customerFrontendUrl + "/login"
+                : authService.isRiderToken(token)
+                ? riderFrontendUrl + "/login"
                 : frontendUrl + "/signup";
         try {
             authService.verifyEmailToken(token);

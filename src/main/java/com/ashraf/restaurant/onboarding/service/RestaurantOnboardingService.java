@@ -140,6 +140,8 @@ public class RestaurantOnboardingService {
         application.setCity(request.getCity());
         application.setState(request.getState());
         application.setPincode(request.getPincode());
+        application.setLatitude(request.getLatitude());
+        application.setLongitude(request.getLongitude());
         application.setFssaiLicense(request.getFssaiLicense());
         application.setGstin(request.getGstin());
         application.setAccountHolderName(request.getAccountHolderName());
@@ -336,6 +338,8 @@ public class RestaurantOnboardingService {
         address.setState(application.getState());
         address.setCountry("India");
         address.setPincode(application.getPincode());
+        address.setLatitude(application.getLatitude());
+        address.setLongitude(application.getLongitude());
         address.setIsDefault(true);
         address.setRestaurant(restaurant);
         restaurant.getAddresses().add(address);
